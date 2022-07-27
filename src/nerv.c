@@ -20,8 +20,8 @@ const char* Flag_LT[9] = {"SUM", "SUB", "LOOP_START", "LOOP_END", "SHR", "SHL", 
 
 typedef struct Token_t {
     TOKEN_TYPE flag;
-    int n;                      // number of times to apply the operation (computed by constant folding)
-    int jump;       // the position to jump if the current token is a loop
+    int n;              // number of times to apply the operation (computed by constant folding)
+    int jump;           // the position to jump if the current token is a loop
 } Token_t;
 
 // Convert Brainfuck Code to a set of Tokens
