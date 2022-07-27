@@ -13,6 +13,9 @@ typedef enum TOKEN_TYPE {
     COM             // Comment
 } TOKEN_TYPE;
 
+// Lookup table to print the token type as a string
+const char* Flag_LT[9] = {"SUM", "SUB", "LOOP_START", "LOOP_END", "SHR", "SHL", "OUT", "IN", "COM"};
+
 typedef struct Token_t {
     TOKEN_TYPE flag;
     int n;                      // number of times to apply the operation (computed by constant folding)
@@ -45,7 +48,8 @@ List_t* Lexer(const char* p) {
     const char* ip = p;
     while (*ip != '\0') {
         Token_t* t = malloc(sizeof(Token_t));
-        t->n = t->jump = 0;
+        t->jump = 0;
+        t->n = 1;
 
         switch (*ip) {
             case '+':
@@ -121,5 +125,6 @@ int main(void) {
     List_t* tokens = Lexer(prog);
     printf("Lexer produced: %d tokens \n", len(tokens));
     Token_t* t = (Token_t*)tokens->data[0];
+    printf("Token_0: {%s %d %d}", Flag_LT[t->flag], t->n, t->jump);
     printf("Hello Nerv!!");
 }
