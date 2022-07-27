@@ -92,8 +92,10 @@ List_t* Lexer(const char* p) {
             default:
                 t->flag = COM;
                 break;
+            
         }
-        
+        ip++;
+
         if (t->flag == COM) { free(t); continue; } // Ignore other characters as comments
         Append(Tokens, (void*)t);
     } 
@@ -109,10 +111,11 @@ List_t* Lexer(const char* p) {
         int scan = 1;
         while (count) {
             TOKEN_TYPE tmp = ((Token_t*)Tokens->data[i + scan])->flag;
-            count += (tmp == LOOP_START) + (-1*tmp==LOOP_END);
+            count += (tmp == LOOP_START);
+            count -= (tmp == LOOP_END);
             scan++;
         }
-        ((Token_t*)Tokens->data[i])->jump = scan + i;
+        ((Token_t*)Tokens->data[i])->jump = scan + i - 1;
         ((Token_t*)Tokens->data[i + scan])->jump = i;
     }
 
@@ -133,21 +136,23 @@ void Visualize_Expr(List_t* expr_tokens) {
 
 // Helper function to ensure that incoming expressions have well formed loops
 bool validate_loops(const char* prog) {
-    size_t x = 0;
+    size_t l, r;
+    l = r = 0;
 
     const char* tmp = prog;
 
     do {
-        x += (*tmp == '[') + (-1 * *tmp==']');
-    } while(*tmp++ != '\0');
+        l += (*tmp == ']');
+        r += (*tmp == '[');
+    }while(*(tmp++) != '\0');
 
-    return !x;
+    return l == r;
 }
 
 // Can interpret the tokens, or compile to C code to further optimize
 
 int main(void) {
-    const char* prog = "[][][]]]]++++----";
+    const char* prog = "[]++++----";
     if (!validate_loops(prog)) {
         fprintf(stderr, "Invalid parens! \n");
         exit(EXIT_FAILURE);
