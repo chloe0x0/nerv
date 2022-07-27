@@ -31,14 +31,15 @@ List_t* Cons(size_t c0) {
 void Append(List_t* xs, void* e) { 
     // Resize is needed
     if (xs->len == xs->cap) {
-        xs->data = realloc(xs->data, xs->cap * R);
+        xs->cap *= R;
+        xs->data = realloc(xs->data, xs->cap);
     }
 
     xs->data[xs->len++] = e;
 }
 
 // Get len of list
-inline size_t len(List_t* xs) { return xs->len; }
+static inline size_t len(List_t* xs) { return xs->len; }
 
 // Destructor
 void Destroy(List_t* xs) {
