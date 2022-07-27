@@ -112,19 +112,28 @@ List_t* Lexer(const char* p) {
             scan++;
         }
         ((Token_t*)Tokens->data[i])->jump = scan + i;
+        ((Token_t*)Tokens->data[i + scan])->jump = i;
     }
 
     return Tokens;
 }
 
+// Visualize an expression
+void Visualize_Expr(List_t* expr_tokens) {
+    printf("expr :== \n \t | \n");
+    for (size_t i = 0; i < len(expr_tokens); ++i) {
+        Token_t* t = (Token_t*)expr_tokens->data[i];
+        printf("\t %s %d", Flag_LT[t->flag], t->n);
+        if (t->flag == LOOP_START || t->flag == LOOP_END)
+            printf(" jumps to: %d", t->jump);
+        printf("\n");
+    }
+}
 
 // Can interpret the tokens, or compile to C code to further optimize
 
 int main(void) {
-    const char* prog = "++++-";
+    const char* prog = "++++----";
     List_t* tokens = Lexer(prog);
-    printf("Lexer produced: %d tokens \n", len(tokens));
-    Token_t* t = (Token_t*)tokens->data[0];
-    printf("Token_0: {%s %d %d}", Flag_LT[t->flag], t->n, t->jump);
-    printf("Hello Nerv!!");
+    Visualize_Expr(tokens);
 }
