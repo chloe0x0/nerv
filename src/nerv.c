@@ -44,8 +44,7 @@ typedef struct Token_t {
 // This eliminates the need to repeatedley scan back and forth to find matching tokens, an expensive and unnecessary computation
 
 // Function to compute loop jumps
-// Now to precompute loop jumps
-// An alternative method use Lookup Tables
+// An alternative method uses Lookup Tables
 // The problem is that this often uses more space than necessary
 void Comp_Loops(List_t* Tokens) {
     for (size_t i = 0; i < len(Tokens); ++i) {
