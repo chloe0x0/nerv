@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include "List.h"
 
 typedef enum TOKEN_TYPE {
@@ -130,10 +131,27 @@ void Visualize_Expr(List_t* expr_tokens) {
     }
 }
 
+// Helper function to ensure that incoming expressions have well formed loops
+bool validate_loops(const char* prog) {
+    size_t x = 0;
+
+    const char* tmp = prog;
+
+    do {
+        x += (*tmp == '[') + (-1 * *tmp==']');
+    } while(*tmp++ != '\0');
+
+    return !x;
+}
+
 // Can interpret the tokens, or compile to C code to further optimize
 
 int main(void) {
-    const char* prog = "++++----";
+    const char* prog = "[][][]]]]++++----";
+    if (!validate_loops(prog)) {
+        fprintf(stderr, "Invalid parens! \n");
+        exit(EXIT_FAILURE);
+    }
     List_t* tokens = Lexer(prog);
     Visualize_Expr(tokens);
 }
