@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 #include "List.h"
 
 typedef enum TOKEN_TYPE {
@@ -46,24 +47,28 @@ typedef struct Token_t {
 List_t* Lexer(const char* p) {
     List_t* Tokens = Cons(25);
 
-    const char* ip = p;
-    while (*ip != '\0') {
+    printf("Lexer -> %s \n", p);
+
+    size_t ip = 0;
+    while (ip < strlen(p)) {
         Token_t* t = malloc(sizeof(Token_t));
         t->jump = 0;
         t->n = 1;
 
-        switch (*ip) {
+        switch (p[ip]) {
             case '+':
                 t->flag = SUM;
-                while(*(++ip) == '+') {
+                while(p[++ip] == '+') {
                     t->n++;
                 }
+                ip--;
                 break;
             case '-':
                 t->flag = SUB;
-                while (*(++ip) == '-') {
+                while (p[++ip] == '-') {
                     t->n++;
                 }
+                ip--;
                 break;
             case '.':
                 t->flag = OUT;
@@ -79,13 +84,13 @@ List_t* Lexer(const char* p) {
                 break;
             case '>':
                 t->flag = SHR;
-                while (*(++ip) == '>') {
+                while (p[++ip] == '>') {
                     t->n++;
                 }
                 break;
             case '<':
                 t->flag = SHL;
-                while (*(++ip) == '<') {
+                while (p[++ip] == '<') {
                     t->n++;
                 }
                 break;
