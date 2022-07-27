@@ -43,6 +43,29 @@ typedef struct Token_t {
 // The secondary optimization to start with will be storing loop jump locations in the token structures
 // This eliminates the need to repeatedley scan back and forth to find matching tokens, an expensive and unnecessary computation
 
+// Function to compute loop jumps
+// Now to precompute loop jumps
+// An alternative method use Lookup Tables
+// The problem is that this often uses more space than necessary
+void Comp_Loops(List_t* Tokens) {
+    for (size_t i = 0; i < len(Tokens); ++i) {
+        if (((Token_t*)Tokens->data[i])->flag != LOOP_START) { continue; }
+        
+        // Scan ahead for next matching loop end token
+        int count = 1;
+        int scan = 1;
+        while (count) {
+            TOKEN_TYPE tmp = ((Token_t*)Tokens->data[i + scan])->flag;
+            count += (tmp == LOOP_START);
+            count -= (tmp == LOOP_END);
+            scan++;
+        }
+        ((Token_t*)Tokens->data[i])->jump = scan + i - 1;
+        ((Token_t*)Tokens->data[i + scan])->jump = i;
+    }
+}
+
+
 // Lexer
 List_t* Lexer(const char* p) {
     List_t* Tokens = Cons(25);
@@ -106,25 +129,9 @@ List_t* Lexer(const char* p) {
         if (t->flag == COM) { free(t); continue; } // Ignore other characters as comments
         Append(Tokens, (void*)t);
     } 
- 
-    // Now to precompute loop jumps
-    // An alternative method use Lookup Tables
-    // The problem is that this often uses more space than necessary
-    for (size_t i = 0; i < len(Tokens); ++i) {
-        if (((Token_t*)Tokens->data[i])->flag != LOOP_START) { continue; }
-        
-        // Scan ahead for next matching loop end token
-        int count = 1;
-        int scan = 1;
-        while (count) {
-            TOKEN_TYPE tmp = ((Token_t*)Tokens->data[i + scan])->flag;
-            count += (tmp == LOOP_START);
-            count -= (tmp == LOOP_END);
-            scan++;
-        }
-        ((Token_t*)Tokens->data[i])->jump = scan + i - 1;
-        ((Token_t*)Tokens->data[i + scan])->jump = i;
-    }
+    
+    // Compute loop jumps
+    Comp_Loops(Tokens);
 
     return Tokens;
 }
