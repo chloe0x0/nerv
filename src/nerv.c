@@ -87,12 +87,14 @@ List_t* Lexer(const char* p) {
                 while (p[++ip] == '>') {
                     t->n++;
                 }
+                ip--;
                 break;
             case '<':
                 t->flag = SHL;
                 while (p[++ip] == '<') {
                     t->n++;
                 }
+                ip--;
                 break;
             default:
                 t->flag = COM;
