@@ -55,15 +55,13 @@ void Comp_Loops(List_t* Tokens) {
         int scan = 1;
         while (count) {
             TOKEN_TYPE tmp = ((Token_t*)Tokens->data[i + scan])->flag;
-            count += (tmp == LOOP_START);
-            count -= (tmp == LOOP_END);
+            count += (tmp == LOOP_START) + (-1 * (tmp==LOOP_END));
             scan++;
         }
         ((Token_t*)Tokens->data[i])->jump = scan + i - 1;
         ((Token_t*)Tokens->data[i + scan])->jump = i;
     }
 }
-
 
 // Lexer
 List_t* Lexer(const char* p) {
