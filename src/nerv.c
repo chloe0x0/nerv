@@ -120,5 +120,6 @@ int main(void) {
     const char* prog = "++++-";
     List_t* tokens = Lexer(prog);
     printf("Lexer produced: %d tokens \n", len(tokens));
+    Token_t* t = (Token_t*)tokens->data[0];
     printf("Hello Nerv!!");
 }
