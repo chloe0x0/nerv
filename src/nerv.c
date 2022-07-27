@@ -59,7 +59,7 @@ void Comp_Loops(List_t* Tokens) {
             scan++;
         }
         ((Token_t*)Tokens->data[i])->jump = scan + i - 1;
-        ((Token_t*)Tokens->data[i + scan])->jump = i;
+        ((Token_t*)Tokens->data[i + scan - 1])->jump = i;
     }
 }
 
@@ -163,7 +163,7 @@ bool validate_loops(const char* prog) {
 // Can interpret the tokens, or compile to C code to further optimize
 
 int main(void) {
-    const char* prog = "[]++++----";
+    const char* prog = "+++++[->+<]";
     if (!validate_loops(prog)) {
         fprintf(stderr, "Invalid parens! \n");
         exit(EXIT_FAILURE);
