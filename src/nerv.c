@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "List.h"
+#include "FileIO.h"
 
 // Constants
 #define TAPE_LEN 30000
@@ -184,7 +185,6 @@ void Interp(const char* p) {
     for (size_t i = 0; i < len(tokens); ++i)
         free((Token_t*)tokens->data[i]);
     Destroy(tokens);
-
 }
 
 // Visualize an expression
@@ -217,7 +217,13 @@ bool validate_loops(const char* prog) {
 // Can interpret the tokens, or compile to C code to further optimize
 
 int main(void) {
-    const char* prog = "+[>[<-[]>+[>+++>[+++++++++++>][>]-[<]>-]]++++++++++<]>>>>>>----.<<+++.<-..+++.<-.>>>.<<.+++.------.>-.<<+.<.";
+    char* str = malloc(sizeof(char) * 9999);
+    if (!Read_BF("D:/nerv/examples/Frac.bf", str)) {
+        fprintf(stderr, "Could not read file! \n");
+        exit(EXIT_FAILURE);
+    }
+
+    const char* prog = str;
     if (!validate_loops(prog)) {
         fprintf(stderr, "Invalid parens! \n");
         exit(EXIT_FAILURE);
