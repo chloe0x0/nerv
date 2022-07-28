@@ -217,8 +217,8 @@ bool validate_loops(const char* prog) {
 // Can interpret the tokens, or compile to C code to further optimize
 
 int main(void) {
-    char* str = malloc(sizeof(char) * 9999);
-    if (!Read_BF("D:/nerv/examples/Frac.bf", str)) {
+    char* str = malloc(sizeof(char) * 999999999);
+    if (!Read_BF("D:/nerv/examples/SkipLoop.bf", str)) {
         fprintf(stderr, "Could not read file! \n");
         exit(EXIT_FAILURE);
     }
