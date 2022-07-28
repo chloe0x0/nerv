@@ -3,6 +3,9 @@
 #include <string.h>
 #include "List.h"
 
+// Constants
+#define TAPE_LEN 30000
+
 typedef enum TOKEN_TYPE {
     SUM,            // Add x to the current cell
     SUB,            // Subtract x from the current cell
@@ -66,8 +69,6 @@ void Comp_Loops(List_t* Tokens) {
 // Lexer
 List_t* Lexer(const char* p) {
     List_t* Tokens = Cons(25);
-
-    printf("Lexer -> %s \n", p);
 
     size_t ip = 0;
     while (ip < strlen(p)) {
@@ -133,6 +134,56 @@ List_t* Lexer(const char* p) {
     return Tokens;
 }
 
+// Basic Interpreter
+void Interp(const char* p) {
+    List_t* tokens = Lexer(p);
+
+    char mem[TAPE_LEN] = {0};
+    size_t ptr = 0;
+    size_t mem_ptr = 0;
+
+    Token_t* tmp;
+    while ( ptr < len(tokens) ) {
+        tmp = (Token_t*)tokens->data[ptr];
+        switch ( tmp->flag ) {
+            case SUM:
+                mem[mem_ptr] += tmp->n;
+                break;
+            case SUB:
+                mem[mem_ptr] -= tmp->n;
+                break;
+            case SHR:
+                mem_ptr += tmp->n;
+                break;
+            case SHL:
+                mem_ptr -= tmp->n;
+                break;
+            case LOOP_START:
+                if (!mem[mem_ptr]) {
+                    ptr = tmp->jump - 1;
+                }
+                break;
+            case LOOP_END:
+                if (mem[mem_ptr]) {
+                    ptr = tmp->jump - 1;
+                }
+                break;
+            case IN:
+                mem[mem_ptr] = getchar();
+                break;
+            case OUT:
+                putchar(mem[mem_ptr]);
+                break;
+            default:
+                break;
+        }
+    
+        ++ptr;
+    }
+
+
+}
+
 // Visualize an expression
 void Visualize_Expr(List_t* expr_tokens) {
     printf("expr :== \n \t | \n");
@@ -163,11 +214,11 @@ bool validate_loops(const char* prog) {
 // Can interpret the tokens, or compile to C code to further optimize
 
 int main(void) {
-    const char* prog = "+++++[->+<]";
+    const char* prog = "+[>[<-[]>+[>+++>[+++++++++++>][>]-[<]>-]]++++++++++<]>>>>>>----.<<+++.<-..+++.<-.>>>.<<.+++.------.>-.<<+.<.";
     if (!validate_loops(prog)) {
         fprintf(stderr, "Invalid parens! \n");
         exit(EXIT_FAILURE);
     }
-    List_t* tokens = Lexer(prog);
-    Visualize_Expr(tokens);
+    
+    Interp(prog);
 }

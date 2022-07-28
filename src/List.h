@@ -21,7 +21,7 @@ List_t* Cons(size_t c0) {
 
     xs->data = calloc(c0, sizeof(void*));
 
-    xs->cap = c0;
+    xs->cap = c0;   
     xs->len = 0;
 
     return xs;
@@ -32,7 +32,12 @@ void Append(List_t* xs, void* e) {
     // Resize is needed
     if (xs->len == xs->cap) {
         xs->cap *= R;
-        xs->data = realloc(xs->data, xs->cap);
+        void** new_array = malloc(sizeof(void*) * xs->cap);
+
+        memcpy(new_array, xs->data, sizeof(void*) * xs->len);
+        free(xs->data);
+
+        xs->data = new_array;
     }
 
     xs->data[xs->len++] = e;
