@@ -6,22 +6,22 @@
 #include <stdlib.h>
 #endif
 
-// Growth factor of the array
-#define R 2
+// Type generic List structure implemented with a Singly Linked List
+typedef struct Node_t {
+    void* data;
+    struct Node_t* nxt;
+} Node_t;
 
-// Type generic List structure implemented with a Dynamic Array Data Structure
 typedef struct List_t {
-    size_t cap, len;
-    void** data;
+    size_t len;
+    Node_t* root, *tail;
 } List_t;
 
 // Constructor
-List_t* Cons(size_t c0) {
+List_t* Cons() {
     List_t* xs = malloc(sizeof(List_t));
 
-    xs->data = calloc(c0, sizeof(void*));
-
-    xs->cap = c0;   
+    xs->root = xs->tail = NULL;
     xs->len = 0;
 
     return xs;
@@ -29,18 +29,18 @@ List_t* Cons(size_t c0) {
 
 // Append to the end of the list
 void Append(List_t* xs, void* e) { 
-    // Resize is needed
-    if (xs->len == xs->cap) {
-        xs->cap *= R;
-        void** new_array = malloc(sizeof(void*) * xs->cap);
+    Node_t* n = malloc(sizeof(Node_t));
+    n->data = e;
+    n->nxt = NULL;
 
-        memcpy(new_array, xs->data, sizeof(void*) * xs->len);
-        free(xs->data);
-
-        xs->data = new_array;
+    if (!xs->root) {
+        xs->root = xs->tail = n;
+    }else {
+        xs->tail->nxt = n;
+        xs->tail = n;
     }
 
-    xs->data[xs->len++] = e;
+    ++xs->len;
 }
 
 // Get len of list
@@ -48,7 +48,14 @@ static inline size_t len(List_t* xs) { return xs->len; }
 
 // Destructor
 void Destroy(List_t* xs) {
-    free(xs->data);
+    Node_t* curr = xs->root;
+    Node_t* tmp = curr->nxt;
+    for (size_t i = 0; i < xs->len; ++i) {
+        free(curr->data);
+        free(curr);
+        curr = tmp;
+        tmp = tmp->nxt;
+    }
     free(xs);
 }
 

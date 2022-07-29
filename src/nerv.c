@@ -16,7 +16,8 @@ typedef enum TOKEN_TYPE {
     SHL,            // Shift the memory ptr to the left by x
     OUT,            // Print cell value as ASCII 
     IN,             // User I/O
-    COM             // Comment
+    COM,            // Comment
+    NIL,            // Set the current memory cell value to 0
 } TOKEN_TYPE;
 
 // Lookup table to print the token type as a string
@@ -25,7 +26,7 @@ const char* Flag_LT[9] = {"SUM", "SUB", "LOOP_START", "LOOP_END", "SHR", "SHL", 
 typedef struct Token_t {
     TOKEN_TYPE flag;
     int n;              // number of times to apply the operation (computed by constant folding)
-    int jump;           // the position to jump if the current token is a loop
+    Node_t* jump;       // the position to jump if the current token is a loop
 } Token_t;
 
 // Convert Brainfuck Code to a set of Tokens
@@ -51,25 +52,43 @@ typedef struct Token_t {
 // An alternative method uses Lookup Tables
 // The problem is that this often uses more space than necessary
 void Comp_Loops(List_t* Tokens) {
+    Node_t* tmp = Tokens->root;
     for (size_t i = 0; i < len(Tokens); ++i) {
-        if (((Token_t*)Tokens->data[i])->flag != LOOP_START) { continue; }
+        if (((Token_t*)tmp->data)->flag != LOOP_START) { continue; }
         
         // Scan ahead for next matching loop end token
         int count = 1;
         int scan = 1;
+        Node_t* search = tmp->nxt;
         while (count) {
-            TOKEN_TYPE tmp = ((Token_t*)Tokens->data[i + scan])->flag;
+            TOKEN_TYPE tmp = ((Token_t*)search->data)->flag;
             count += (tmp == LOOP_START) + (-1 * (tmp==LOOP_END));
             scan++;
+            search = search->nxt;
         }
-        ((Token_t*)Tokens->data[i])->jump = scan + i - 1;
-        ((Token_t*)Tokens->data[i + scan - 1])->jump = i;
+        ((Token_t*)tmp->data)->jump = search;
+        ((Token_t*)search->data)->jump = tmp;
+
+        tmp = tmp->nxt;
     }
 }
 
 // Lexer
+/*
+    Next major optimization: Loop Abstractions
+
+    Common loop structures can be mapped to single operations
+
+    [-] -> sets the current cell to 0
+                NIL
+    [->+<] -> moves the current cell value to the right by one cell
+                MMOV_RIGHT 1 
+    [->*n + <*n] -> moves the current cell value to the right by N cells
+        NMMOV_RIGHT N
+
+*/
 List_t* Lexer(const char* p) {
-    List_t* Tokens = Cons(25);
+    List_t* Tokens = Cons();
 
     size_t ip = 0;
     while (ip < strlen(p)) {
@@ -140,12 +159,12 @@ void Interp(const char* p) {
     List_t* tokens = Lexer(p);
 
     char mem[TAPE_LEN] = {0};
-    size_t ptr = 0;
+    Node_t* instr = tokens->root;
     size_t mem_ptr = 0;
 
     Token_t* tmp;
-    while ( ptr < len(tokens) ) {
-        tmp = (Token_t*)tokens->data[ptr];
+    while ( instr ) {
+        tmp = ((Token_t*)instr->data)->flag;
         switch ( tmp->flag ) {
             case SUM:
                 mem[mem_ptr] += tmp->n;
@@ -161,12 +180,12 @@ void Interp(const char* p) {
                 break;
             case LOOP_START:
                 if (!mem[mem_ptr]) {
-                    ptr = tmp->jump - 1;
+                    instr = tmp->jump;
                 }
                 break;
             case LOOP_END:
                 if (mem[mem_ptr]) {
-                    ptr = tmp->jump - 1;
+                    instr = tmp->jump;
                 }
                 break;
             case IN:
@@ -175,23 +194,25 @@ void Interp(const char* p) {
             case OUT:
                 putchar(mem[mem_ptr]);
                 break;
+            case NIL:
+                mem[mem_ptr] = 0;
+                break;                
             default:
                 break;
         }
     
-        ++ptr;
+        instr = instr->nxt;
     }
 
-    for (size_t i = 0; i < len(tokens); ++i)
-        free((Token_t*)tokens->data[i]);
     Destroy(tokens);
 }
 
 // Visualize an expression
 void Visualize_Expr(List_t* expr_tokens) {
+    Node_t* tmp = expr_tokens->root;
     printf("expr :== \n \t | \n");
     for (size_t i = 0; i < len(expr_tokens); ++i) {
-        Token_t* t = (Token_t*)expr_tokens->data[i];
+        Token_t* t = (Token_t*)tmp->data;
         printf("\t %s %d", Flag_LT[t->flag], t->n);
         if (t->flag == LOOP_START || t->flag == LOOP_END)
             printf(" jumps to: %d", t->jump);
@@ -216,9 +237,9 @@ bool validate_loops(const char* prog) {
 
 // Can interpret the tokens, or compile to C code to further optimize
 
-int main(void) {
-    char* str = malloc(sizeof(char) * 999999999);
-    if (!Read_BF("D:/nerv/examples/SkipLoop.bf", str)) {
+int main(int argc, char* argv[]) {
+    char* str = malloc(sizeof(char) * 999999);
+    if (!Read_BF(argv[1], str)) {
         fprintf(stderr, "Could not read file! \n");
         exit(EXIT_FAILURE);
     }
@@ -230,4 +251,5 @@ int main(void) {
     }
     
     Interp(prog);
+    free(str);
 }
