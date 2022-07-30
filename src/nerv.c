@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <time.h>
 #include "FileIO.h"
 #include "List.h"
 
@@ -80,7 +81,7 @@ List_t* Lexer(const char* p) {
         switch (p[ip]) {
             case '+':
                 t->flag = SUM;
-                while(p[++ip] == '+') {
+                while (p[++ip] == '+') {
                     t->n++;
                 }
                 ip--;
@@ -235,6 +236,9 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
     
+    clock_t t = clock();
     Interp(prog);
+    t = clock() - t;
+    printf("Time taken to execute %s | %f \n", argv[1], (double)t / CLOCKS_PER_SEC);
     free(str);
 }
