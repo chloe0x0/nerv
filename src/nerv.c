@@ -216,7 +216,6 @@ bool validate_loops(const char* prog) {
 
 int main(int argc, char* argv[]) {
     char str[999999];
-    argv[1] = "D:\\nerv\\examples\\Frac.bf";
     if (!Read_BF(argv[1], str)) {
         fprintf(stderr, "Could not read %s \n", argv[1]);
         exit(EXIT_FAILURE);
