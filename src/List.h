@@ -48,6 +48,9 @@ static inline size_t len(List_t* xs) { return xs->len; }
 
 // Destructor
 void Destroy(List_t* xs) {
+    // Free tokens in the list
+    for (size_t i = 0; i < len(tokens); ++i)
+        free((Token_t*)tokens->data[i]);
     free(xs->data);
     free(xs);
 }

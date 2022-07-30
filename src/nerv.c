@@ -182,7 +182,7 @@ void Interp(const char* p) {
         ++ptr;
     }
 
-
+    Destroy(tokens);
 }
 
 // Visualize an expression
