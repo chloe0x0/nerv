@@ -32,12 +32,7 @@ void Append(List_t* xs, void* e) {
     // Resize is needed
     if (xs->len == xs->cap) {
         xs->cap *= R;
-        void** new_array = malloc(sizeof(void*) * xs->cap);
-
-        memcpy(new_array, xs->data, sizeof(void*) * xs->len);
-        free(xs->data);
-
-        xs->data = new_array;
+        xs->data = realloc(xs->data, sizeof(void*) * xs->cap);
     }
 
     xs->data[xs->len++] = e;
