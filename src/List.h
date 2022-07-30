@@ -19,7 +19,7 @@ typedef struct List_t {
 List_t* Cons(size_t c0) {
     List_t* xs = malloc(sizeof(List_t));
 
-    xs->data = calloc(c0, sizeof(void*));
+    xs->data = malloc(sizeof(void*) * c0);
 
     xs->cap = c0;   
     xs->len = 0;

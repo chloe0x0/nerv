@@ -187,6 +187,12 @@ void Interp(const char* p) {
     Destroy(tokens);
 }
 
+// Write a loop optimizer
+void Opt(List_t* tokens) { return; }
+
+// BF -> C Compiler
+void C_Comp(const char* p) { return; }
+
 // Visualize an expression
 void Visualize_Expr(List_t* expr_tokens) {
     printf("expr :== \n \t | \n");
