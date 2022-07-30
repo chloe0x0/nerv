@@ -182,6 +182,8 @@ void Interp(const char* p) {
         ++ptr;
     }
 
+    for (size_t i = 0; i < len(tokens); ++i)
+        free((Token_t*)tokens->data[i]);
     Destroy(tokens);
 }
 
