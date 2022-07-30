@@ -21,7 +21,8 @@ bool Read_BF(const char* p, char* buff) {
 
     char c;
     while( !feof(fp) ) {
-        *buff++ = fgetc(fp);
+        c = fgetc(fp);
+        if (c != ' ') { *buff++ = c; }
     }
     *buff = '\0';
 
