@@ -17,11 +17,12 @@ typedef enum TOKEN_TYPE {
     SHL,            // Shift the memory ptr to the left by x
     OUT,            // Print cell value as ASCII 
     IN,             // User I/O
-    COM             // Comment
+    COM,            // Comment
+    MEM_SET,        // Set the current cell value to x
 } TOKEN_TYPE;
 
 // Lookup table to print the token type as a string
-const char* Flag_LT[9] = {"SUM", "SUB", "LOOP_START", "LOOP_END", "SHR", "SHL", "OUT", "IN", "COM"};
+const char* Flag_LT[10] = {"SUM", "SUB", "LOOP_START", "LOOP_END", "SHR", "SHL", "OUT", "IN", "COM", "MEM_SET"};
 
 typedef struct Token_t {
     TOKEN_TYPE flag;
@@ -73,7 +74,8 @@ List_t* Lexer(const char* p) {
     List_t* Tokens = Cons(25);
 
     size_t ip = 0;
-    while (ip < strlen(p)) {
+    size_t len = strlen(p);
+    while (ip < len) {
         Token_t* t = malloc(sizeof(Token_t));
         t->jump = 0;
         t->n = 1;
@@ -100,7 +102,10 @@ List_t* Lexer(const char* p) {
                 t->flag = IN;
                 break;
             case '[':
-                t->flag = LOOP_START;
+                if ((p[ip+1] == '-') && (p[ip+2] == ']')) {
+                    t->flag = MEM_SET; t->n = 0; ip+=2;
+                }
+                else { t->flag = LOOP_START; }
                 break;
             case ']':
                 t->flag = LOOP_END;
@@ -176,6 +181,9 @@ void Interp(const char* p) {
             case OUT:
                 putchar(mem[mem_ptr]);
                 break;
+            case MEM_SET:
+                mem[mem_ptr] = tmp->n;
+                break;
             default:
                 break;
         }
@@ -187,9 +195,6 @@ void Interp(const char* p) {
         free((Token_t*)tokens->data[i]);
     Destroy(tokens);
 }
-
-// Write a loop optimizer
-void Opt(List_t* tokens) { return; }
 
 // BF -> C Compiler
 void C_Comp(const char* p) { return; }
