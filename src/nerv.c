@@ -7,6 +7,7 @@
 
 // Constants
 #define TAPE_LEN 30000
+#define DEF_OUT  "out.c"
 
 typedef enum TOKEN_TYPE {
     SUM,            // Add x to the current cell
@@ -19,6 +20,8 @@ typedef enum TOKEN_TYPE {
     IN,             // User I/O
     COM,            // Comment
     MEM_SET,        // Set the current cell value to x
+    NIL_SCAN,       // Scan by an offset x until a zero cell is found
+    MOV_SUM,        // Add the current cell value to another cell by a given offset (Destructive to the current cell's value)
 } TOKEN_TYPE;
 
 // Lookup table to print the token type as a string
@@ -26,7 +29,7 @@ const char* Flag_LT[10] = {"SUM", "SUB", "LOOP_START", "LOOP_END", "SHR", "SHL",
 
 typedef struct Token_t {
     TOKEN_TYPE flag;
-    int n;              // number of times to apply the operation (computed by constant folding)
+    int n;              // number of times to apply the operation/ offset depending on context (computed by constant folding)
     int jump;           // the position to jump if the current token is a loop
 } Token_t;
 
@@ -197,7 +200,63 @@ void Interp(const char* p) {
 }
 
 // BF -> C Compiler
-void C_Comp(const char* p) { return; }
+void C_Comp(const char* p, const char* path) {
+    FILE* out = fopen(path, "w");
+
+    if (!out) {
+        fprintf(stderr, "Compiler: Could not open %s \n", path);
+        exit(EXIT_FAILURE);
+    }
+    size_t indent = 1; // Number of tabs for each line, starts at 1 for the main function
+
+    List_t* tokens = Lexer(p);
+
+    // Some basic necessities
+    fprintf(out, "#include <stdio.h>\n\n\n\nint main(void) {\n");
+    fprintf(out, "\tchar mem[%d] = {0};\n\tchar* ptr = mem;\n", TAPE_LEN);
+    for (size_t i = 0; i < len(tokens); ++i) {
+        // first, indent
+        Token_t* t = (Token_t*)tokens->data[i];
+
+        for (int j = 0; j < indent - (t->flag == LOOP_END); ++j)
+            fputc('\t', out);
+
+        switch ( t->flag ) {
+            case SUM:
+                fprintf(out, "*ptr += %d;\n", t->n);
+                break;
+            case SUB:
+                fprintf(out, "*ptr -= %d;\n", t->n);
+                break;
+            case SHR:
+                fprintf(out, "ptr += %d;\n", t->n);
+                break;
+            case SHL:
+                fprintf(out, "ptr -= %d;\n", t->n);
+                break;
+            case MEM_SET:
+                fprintf(out, "*ptr = %d;\n", t->n);
+                break;
+            case LOOP_END:
+                indent--;
+                fprintf(out, "}\n");
+                break;
+            case OUT:
+                fprintf(out, "putchar(*ptr);\n");
+                break;
+            case IN:
+                fprintf(out, "*ptr = getchar();\n");
+                break;
+            case LOOP_START:
+                indent++;
+                fprintf(out, "while (*ptr) {\n");
+                break;
+        }
+    }
+
+    fprintf(out, "}");  // End of the main function
+    fclose(out);
+}
 
 // Visualize an expression
 void Visualize_Expr(List_t* expr_tokens) {
@@ -240,10 +299,13 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "Invalid parens! \n");
         exit(EXIT_FAILURE);
     }
-    
+    C_Comp(prog, DEF_OUT);
+
+    /*    
     clock_t t = clock();
     Interp(prog);
     t = clock() - t;
     printf("Time taken to execute %s | %f \n", argv[1], (double)t / CLOCKS_PER_SEC);
+    */
     free(str);
 }
