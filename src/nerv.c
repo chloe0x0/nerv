@@ -149,49 +149,49 @@ void Interp(const char* p) {
     List_t* tokens = Lexer(p);
 
     char mem[TAPE_LEN] = {0};
-    size_t ptr = 0;
-    size_t mem_ptr = 0;
+    size_t ip = 0;
+    char* ptr = mem;
 
     Token_t* tmp;
-    while ( ptr < len(tokens) ) {
-        tmp = (Token_t*)tokens->data[ptr];
+    while ( ip < len(tokens) ) {
+        tmp = (Token_t*)tokens->data[ip];
         switch ( tmp->flag ) {
             case SUM:
-                mem[mem_ptr] += tmp->n;
+                *ptr += tmp->n;
                 break;
             case SUB:
-                mem[mem_ptr] -= tmp->n;
+                *ptr -= tmp->n;
                 break;
             case SHR:
-                mem_ptr += tmp->n;
+                ptr += tmp->n;
                 break;
             case SHL:
-                mem_ptr -= tmp->n;
+                ptr -= tmp->n;
                 break;
             case LOOP_START:
-                if (!mem[mem_ptr]) {
-                    ptr = tmp->jump - 1;
+                if (!*ptr) {
+                    ip = tmp->jump - 1;
                 }
                 break;
             case LOOP_END:
-                if (mem[mem_ptr]) {
-                    ptr = tmp->jump - 1;
+                if (ptr) {
+                    ip = tmp->jump - 1;
                 }
                 break;
             case IN:
-                mem[mem_ptr] = getchar();
+                *ptr = getchar();
                 break;
             case OUT:
-                putchar(mem[mem_ptr]);
+                putchar(*ptr);
                 break;
             case MEM_SET:
-                mem[mem_ptr] = tmp->n;
+                *ptr = tmp->n;
                 break;
             default:
                 break;
         }
     
-        ++ptr;
+        ++ip;
     }
 
     for (size_t i = 0; i < len(tokens); ++i)
@@ -300,7 +300,7 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
     C_Comp(prog, DEF_OUT);
-    system("gcc -o out out.c");
+    system("gcc -o out out.c -O3");
 
     clock_t t = clock();
     system("out");
