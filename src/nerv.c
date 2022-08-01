@@ -20,7 +20,6 @@ typedef enum TOKEN_TYPE {
     IN,             // User I/O
     COM,            // Comment
     MEM_SET,        // Set the current cell value to x
-    NIL_SCAN,       // Scan by an offset x until a zero cell is found
     MOV_SUM,        // Add the current cell value to another cell by a given offset (Destructive to the current cell's value)
 } TOKEN_TYPE;
 
@@ -29,12 +28,12 @@ const char* Flag_LT[10] = {"SUM", "SUB", "LOOP_START", "LOOP_END", "SHR", "SHL",
 
 typedef struct Token_t {
     TOKEN_TYPE flag;
-    int n;              // number of times to apply the operation/ offset depending on context (computed by constant folding)
+    int n;              // number of times to apply the operation/ offset depending on context (computed by run length encoding)
     int jump;           // the position to jump if the current token is a loop
 } Token_t;
 
 // Convert Brainfuck Code to a set of Tokens
-// Use of constant folding to reduce redundancy and optimize the program
+// Use of run length encoding to reduce redundancy and optimize the program
 // A basic example: 
 
 /*
@@ -105,6 +104,7 @@ List_t* Lexer(const char* p) {
                 t->flag = IN;
                 break;
             case '[':
+                // Reduce [-] loops to MEM_SET instructions
                 if ((p[ip+1] == '-') && (p[ip+2] == ']')) {
                     t->flag = MEM_SET; t->n = 0; ip+=2;
                 }
@@ -285,7 +285,7 @@ bool validate_loops(const char* prog) {
     return l == r;
 }
 
-// Can interpret the tokens, or compile to C code to further optimize
+// Can interpret the tokens, or compile to C code to further optimize with the C compiler
 
 int main(int argc, char* argv[]) {
     char str[999999];
