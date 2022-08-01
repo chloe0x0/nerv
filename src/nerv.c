@@ -300,12 +300,11 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
     C_Comp(prog, DEF_OUT);
+    system("gcc -o out out.c");
 
-    /*    
     clock_t t = clock();
-    Interp(prog);
+    system("out");
     t = clock() - t;
     printf("Time taken to execute %s | %f \n", argv[1], (double)t / CLOCKS_PER_SEC);
-    */
     free(str);
 }
