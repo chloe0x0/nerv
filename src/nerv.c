@@ -4,33 +4,14 @@
 #include <time.h>
 #include "FileIO.h"
 #include "List.h"
+#include "Token.h"
 
 // Constants
 #define TAPE_LEN 30000
 #define DEF_OUT  "out.c"
 
-typedef enum TOKEN_TYPE {
-    SUM,            // Add x to the current cell
-    SUB,            // Subtract x from the current cell
-    LOOP_START,     // Mark the begining of a loop
-    LOOP_END,       // Mark the end of a loop
-    SHR,            // Shift the memory ptr to the right by x
-    SHL,            // Shift the memory ptr to the left by x
-    OUT,            // Print cell value as ASCII 
-    IN,             // User I/O
-    COM,            // Comment
-    MEM_SET,        // Set the current cell value to x
-    MOV_SUM,        // Add the current cell value to another cell by a given offset (Destructive to the current cell's value)
-} TOKEN_TYPE;
-
 // Lookup table to print the token type as a string
 const char* Flag_LT[10] = {"SUM", "SUB", "LOOP_START", "LOOP_END", "SHR", "SHL", "OUT", "IN", "COM", "MEM_SET"};
-
-typedef struct Token_t {
-    TOKEN_TYPE flag;
-    int n;              // number of times to apply the operation/ offset depending on context (computed by run length encoding)
-    int jump;           // the position to jump if the current token is a loop
-} Token_t;
 
 // Convert Brainfuck Code to a set of Tokens
 // Use of run length encoding to reduce redundancy and optimize the program
@@ -48,10 +29,10 @@ typedef struct Token_t {
  */
 // In this way, rather than applying SUM to the current cell N times we simply add N to the cell once 
 // The asymptotic time complexity of c + n, where c is the current cell, goes from linear to constant
-// The secondary optimization to start with will be storing loop jump locations in the token structures
+// The secondary optimization to start with will be storing loop offset locations in the token structures
 // This eliminates the need to repeatedley scan back and forth to find matching tokens, an expensive and unnecessary computation
 
-// Function to compute loop jumps
+// Function to compute loop offsets
 // An alternative method uses Lookup Tables
 // The problem is that this often uses more space than necessary
 void Comp_Loops(List_t* Tokens) {
@@ -66,8 +47,8 @@ void Comp_Loops(List_t* Tokens) {
             count += (tmp == LOOP_START) + (-1 * (tmp==LOOP_END));
             scan++;
         }
-        ((Token_t*)Tokens->data[i])->jump = scan + i - 1;
-        ((Token_t*)Tokens->data[i + scan - 1])->jump = i;
+        ((Token_t*)Tokens->data[i])->offset = scan + i - 1;
+        ((Token_t*)Tokens->data[i + scan - 1])->offset = i;
     }
 }
 
@@ -79,7 +60,7 @@ List_t* Lexer(const char* p) {
     size_t len = strlen(p);
     while (ip < len) {
         Token_t* t = malloc(sizeof(Token_t));
-        t->jump = 0;
+        t->offset = 0;
         t->n = 1;
 
         switch (p[ip]) {
@@ -104,10 +85,19 @@ List_t* Lexer(const char* p) {
                 t->flag = IN;
                 break;
             case '[':
-                // Reduce [-] loops to MEM_SET instructions
-                if ((p[ip+1] == '-') && (p[ip+2] == ']')) {
+                // Via a basic non-consuming scan we can identify specific loop constructs and reduce them to single instructions
+                // Reduce [-] and [+] loops to MEM_SET instructions
+                if ((p[ip+1] == '-' || p[ip+1] == '+') && (p[ip+2] == ']')) {
                     t->flag = MEM_SET; t->n = 0; ip+=2;
                 }
+                /* 
+                    Copy Loops:
+                        Most Primitive: [->+<] | [-<+>]
+                            Simple: The offset is set to +1 or -1 according to the position of the first 
+                                                        if the SHR and SHL equal eachother in magnitude:
+                                                            and the SHR comes first: offset is 1 * the number of SHR
+                                                            otherwise: offset is -1 * the number of SHL
+                */
                 else { t->flag = LOOP_START; }
                 break;
             case ']':
@@ -138,7 +128,7 @@ List_t* Lexer(const char* p) {
         Append(Tokens, (void*)t);
     } 
     
-    // Compute loop jumps
+    // Compute loop offsets
     Comp_Loops(Tokens);
 
     return Tokens;
@@ -170,12 +160,12 @@ void Interp(const char* p) {
                 break;
             case LOOP_START:
                 if (!*ptr) {
-                    ip = tmp->jump - 1;
+                    ip = tmp->offset - 1;
                 }
                 break;
             case LOOP_END:
                 if (ptr) {
-                    ip = tmp->jump - 1;
+                    ip = tmp->offset - 1;
                 }
                 break;
             case IN:
@@ -265,7 +255,7 @@ void Visualize_Expr(List_t* expr_tokens) {
         Token_t* t = (Token_t*)expr_tokens->data[i];
         printf("\t %s %d", Flag_LT[t->flag], t->n);
         if (t->flag == LOOP_START || t->flag == LOOP_END)
-            printf(" jumps to: %d", t->jump);
+            printf(" offsets to: %d", t->offset);
         printf("\n");
     }
 }
