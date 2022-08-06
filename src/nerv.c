@@ -65,7 +65,6 @@ void Optimizer(List_t* Tokens) {
     for (size_t i = 0; i < len(Tokens); ++i) {
         Token_t* token = (Token_t*)Tokens->data[i];
         if (token->flag != LOOP_START) { continue; }
-
         
 
         // Loop until the next matching bracket
