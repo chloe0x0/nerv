@@ -37,7 +37,8 @@ const char* Flag_LT[10] = {"SUM", "SUB", "LOOP_START", "LOOP_END", "SHR", "SHL",
 // The problem is that this often uses more space than necessary
 void Comp_Loops(List_t* Tokens) {
     for (size_t i = 0; i < len(Tokens); ++i) {
-        if (((Token_t*)Tokens->data[i])->flag != LOOP_START) { continue; }
+        Token_t* token = (Token_t*)Tokens->data[i];
+        if (token->flag != LOOP_START) { continue; }
         
         // Scan ahead for next matching loop end token
         int count = 1;
@@ -47,8 +48,31 @@ void Comp_Loops(List_t* Tokens) {
             count += (tmp == LOOP_START) + (-1 * (tmp==LOOP_END));
             scan++;
         }
-        ((Token_t*)Tokens->data[i])->offset = scan + i - 1;
+        token->offset = scan + i - 1;
         ((Token_t*)Tokens->data[i + scan - 1])->offset = i;
+    }
+}
+
+// More complex loop unrolling
+
+/*
+        The following loops are unrolled into single operations:
+                Multiplication Loops:
+                MEM_MOV loops: 
+*/
+void Optimizer(List_t* Tokens) {
+    // Assumption: Loop offsets are computed
+    for (size_t i = 0; i < len(Tokens); ++i) {
+        Token_t* token = (Token_t*)Tokens->data[i];
+        if (token->flag != LOOP_START) { continue; }
+
+        
+
+        // Loop until the next matching bracket
+        for (size_t j = 0; j < token->offset - i; ++j) {
+            Token_t* t = (Token_t*)Tokens->data[i + j];
+
+        }
     }
 }
 
@@ -90,14 +114,6 @@ List_t* Lexer(const char* p) {
                 if ((p[ip+1] == '-' || p[ip+1] == '+') && (p[ip+2] == ']')) {
                     t->flag = MEM_SET; t->n = 0; ip+=2;
                 }
-                /* 
-                    Copy Loops:
-                        Most Primitive: [->+<] | [-<+>]
-                            Simple: The offset is set to +1 or -1 according to the position of the first 
-                                                        if the SHR and SHL equal eachother in magnitude:
-                                                            and the SHR comes first: offset is 1 * the number of SHR
-                                                            otherwise: offset is -1 * the number of SHL
-                */
                 else { t->flag = LOOP_START; }
                 break;
             case ']':
@@ -164,7 +180,7 @@ void Interp(const char* p) {
                 }
                 break;
             case LOOP_END:
-                if (ptr) {
+                if (*ptr) {
                     ip = tmp->offset - 1;
                 }
                 break;

@@ -22,5 +22,4 @@ typedef struct Token_t {
     int offset;         // the position to offset the command
 } Token_t;
 
-
 #endif
