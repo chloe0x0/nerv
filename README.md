@@ -8,5 +8,5 @@ Nerv is an optimizing toolchain for interacting with Brainfuck programs. It incl
 Optimize the Brainfuck to C compiler's File IO (ie: less fprintf calls)
 More complex loop unrolling
 
-## How does Nerv optimize Brainfuck programs
+## Why bother with optimizations?
 Brainfuck is a heinously innefficient language. 
