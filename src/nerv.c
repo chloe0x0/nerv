@@ -272,7 +272,7 @@ bool validate_loops(const char* prog) {
     return l == r;
 }
 
-// Can nervret the tokens, or compile to C code to further optimize with the C compiler
+// Can interpret the tokens, or compile to C code to further optimize with the C compiler
 
 int main(int argc, char* argv[]) {
     char str[999999];
