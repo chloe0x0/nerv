@@ -12,6 +12,7 @@
 
 // Lookup table to print the token type as a string
 const char* Flag_LT[10] = {"SUM", "SUB", "LOOP_START", "LOOP_END", "SHR", "SHL", "OUT", "IN", "COM", "MEM_SET"};
+const char* instr[10] = {"+", "-", "[", "]", ">", "<", ".", ",", "", ""};
 
 // Convert Brainfuck Code to a set of Tokens
 // Use of run length encoding to reduce redundancy and optimize the program
@@ -57,22 +58,16 @@ void Comp_Loops(List_t* Tokens) {
 
 /*
         The following loops are unrolled into single operations:
+
+                [->+<]
+                    or
+                        [-<+>]
+
+
                 Multiplication Loops:
                 MEM_MOV loops: 
 */
-void Optimizer(List_t* Tokens) {
-    // Assumption: Loop offsets are computed
-    for (size_t i = 0; i < len(Tokens); ++i) {
-        Token_t* token = (Token_t*)Tokens->data[i];
-        if (token->flag != LOOP_START) { continue; }
-        
-        // Loop until the next matching bracket
-        for (size_t j = 0; j < token->offset - i; ++j) {
-            Token_t* t = (Token_t*)Tokens->data[i + j];
-
-        }
-    }
-}
+void Optimizer(List_t* tokens);
 
 // Lexer
 List_t* Lexer(const char* p) {
@@ -148,8 +143,8 @@ List_t* Lexer(const char* p) {
     return Tokens;
 }
 
-// Basic Interpreter
-void Interp(const char* p) {
+// Basic nervreter
+void nerv(const char* p) {
     List_t* tokens = Lexer(p);
 
     char mem[TAPE_LEN] = {0};
@@ -192,7 +187,8 @@ void Interp(const char* p) {
                 *ptr = tmp->n;
                 break;
             default:
-                break;
+                fprintf(stderr, "Unkown Token: { Flag: %d; Offset: %d; N: %d; } \n", tmp->flag, tmp->offset, tmp->n);
+                exit(EXIT_FAILURE);
         }
     
         ++ip;
@@ -204,20 +200,20 @@ void Interp(const char* p) {
 }
 
 // BF -> C Compiler
-void C_Comp(const char* p, const char* path) {
+void nervc(const char* p, const char* path) {
     FILE* out = fopen(path, "w");
 
     if (!out) {
         fprintf(stderr, "Compiler: Could not open %s \n", path);
         exit(EXIT_FAILURE);
     }
+ 
     size_t indent = 1; // Number of tabs for each line, starts at 1 for the main function
 
     List_t* tokens = Lexer(p);
 
     // Some basic necessities
-    fprintf(out, "#include <stdio.h>\n\n\n\nint main(void) {\n");
-    fprintf(out, "\tchar mem[%d] = {0};\n\tchar* ptr = mem;\n", TAPE_LEN);
+    fprintf(out, "#include <stdio.h>\n\n\n\nint main(void) {\n\tchar mem[%d] = {0};\n\tchar* ptr = mem;\n", TAPE_LEN);
     for (size_t i = 0; i < len(tokens); ++i) {
         // first, indent
         Token_t* t = (Token_t*)tokens->data[i];
@@ -257,7 +253,6 @@ void C_Comp(const char* p, const char* path) {
                 break;
         }
     }
-
     fprintf(out, "}");  // End of the main function
     fclose(out);
 }
@@ -289,7 +284,7 @@ bool validate_loops(const char* prog) {
     return l == r;
 }
 
-// Can interpret the tokens, or compile to C code to further optimize with the C compiler
+// Can nervret the tokens, or compile to C code to further optimize with the C compiler
 
 int main(int argc, char* argv[]) {
     char str[999999];
@@ -303,12 +298,11 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "Invalid parens! \n");
         exit(EXIT_FAILURE);
     }
-    C_Comp(prog, DEF_OUT);
+    nervc(prog, DEF_OUT);
     system("gcc -o out out.c -O3");
 
     clock_t t = clock();
     system("out");
     t = clock() - t;
     printf("Time taken to execute %s | %f \n", argv[1], (double)t / CLOCKS_PER_SEC);
-    free(str);
 }
