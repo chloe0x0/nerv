@@ -143,7 +143,7 @@ List_t* Lexer(const char* p) {
     return Tokens;
 }
 
-// Basic nervreter
+// Basic interpreter
 void nerv(const char* p) {
     List_t* tokens = Lexer(p);
 
@@ -255,18 +255,6 @@ void nervc(const char* p, const char* path) {
     }
     fprintf(out, "}");  // End of the main function
     fclose(out);
-}
-
-// Visualize an expression
-void Visualize_Expr(List_t* expr_tokens) {
-    printf("expr :== \n \t | \n");
-    for (size_t i = 0; i < len(expr_tokens); ++i) {
-        Token_t* t = (Token_t*)expr_tokens->data[i];
-        printf("\t %s %d", Flag_LT[t->flag], t->n);
-        if (t->flag == LOOP_START || t->flag == LOOP_END)
-            printf(" offsets to: %d", t->offset);
-        printf("\n");
-    }
 }
 
 // Helper function to ensure that incoming expressions have well formed loops
