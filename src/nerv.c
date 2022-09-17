@@ -238,17 +238,17 @@ void nervc(const char* p, const char* path) {
                 break;
             case LOOP_END:
                 indent--;
-                fprintf(out, "}\n");
+                fputs("}\n", out);
                 break;
             case OUT:
-                fprintf(out, "putchar(*ptr);\n");
+                fputs("putchar(*ptr);\n", out);
                 break;
             case IN:
-                fprintf(out, "*ptr = getchar();\n");
+                fputs("*ptr = getchar();\n", out);
                 break;
             case LOOP_START:
                 indent++;
-                fprintf(out, "while (*ptr) {\n");
+                fputs("while (*ptr) {\n", out);
                 break;
         }
     }
