@@ -16,10 +16,11 @@ typedef enum TOKEN_TYPE {
     MUL,            // Multiplication to a cell at a given offset by X*c where c is the current cell value
 } TOKEN_TYPE;
 
-typedef struct Token_t {
+// Brainfuck Token structure
+typedef struct Tok {
     TOKEN_TYPE flag;
     int n;              // number of times to apply the operation (computed by run length encoding)
     int offset;         // the position to offset the command
-} Token_t;
+} Tok;
 
 #endif

@@ -6,13 +6,15 @@
 #include <stdlib.h>
 #endif
 
+#include "Token.h"
+
 // Growth factor of the array
 #define R 2
 
-// Type generic List structure implemented with a Dynamic Array Data Structure
+// Dynamic Array to store Tokens
 typedef struct List_t {
     size_t cap, len;
-    void** data;
+    Tok** data;
 } List_t;
 
 // Constructor
@@ -23,7 +25,7 @@ List_t* Cons(size_t c0) {
         exit(EXIT_FAILURE);
     }
 
-    xs->data = malloc(sizeof(void*) * c0);
+    xs->data = malloc(sizeof(Tok*) * c0);
 
     xs->cap = c0;   
     xs->len = 0;
@@ -32,11 +34,11 @@ List_t* Cons(size_t c0) {
 } 
 
 // Append to the end of the list
-void Append(List_t* xs, void* e) { 
+void Append(List_t* xs, Tok* e) { 
     // Resize is needed
     if (xs->len == xs->cap) {
         xs->cap *= R;
-        xs->data = realloc(xs->data, sizeof(void*) * xs->cap);
+        xs->data = realloc(xs->data, sizeof(Tok*) * xs->cap);
     }
 
     xs->data[xs->len++] = e;
@@ -48,6 +50,8 @@ static inline size_t len(List_t* xs) { return xs->len; }
 // Destructor
 void Destroy(List_t* xs) {
     // Free tokens in the list
+    for (size_t i = 0; i < len(xs); ++i)
+        free(xs->data[i]);
     free(xs->data);
     free(xs);
 }

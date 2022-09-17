@@ -37,19 +37,19 @@ const char* Flag_LT[10] = {"SUM", "SUB", "LOOP_START", "LOOP_END", "SHR", "SHL",
 // The problem is that this often uses more space than necessary
 void Comp_Loops(List_t* Tokens) {
     for (size_t i = 0; i < len(Tokens); ++i) {
-        Token_t* token = (Token_t*)Tokens->data[i];
+        Tok* token = Tokens->data[i];
         if (token->flag != LOOP_START) { continue; }
         
         // Scan ahead for next matching loop end token
         int count = 1;
         int scan = 1;
         while (count) {
-            TOKEN_TYPE tmp = ((Token_t*)Tokens->data[i + scan])->flag;
+            TOKEN_TYPE tmp = (Tokens->data[i + scan])->flag;
             count += (tmp == LOOP_START) + (-1 * (tmp==LOOP_END));
             scan++;
         }
         token->offset = scan + i - 1;
-        ((Token_t*)Tokens->data[i + scan - 1])->offset = i;
+        (Tokens->data[i + scan - 1])->offset = i;
     }
 }
 
@@ -75,7 +75,7 @@ List_t* Lexer(const char* p) {
     size_t ip = 0;
     size_t len = strlen(p);
     while (ip < len) {
-        Token_t* t = malloc(sizeof(Token_t));
+        Tok* t = malloc(sizeof(Tok));
         t->offset = 0;
         t->n = 1;
 
@@ -147,12 +147,13 @@ void nerv(const char* p) {
     List_t* tokens = Lexer(p);
 
     char mem[TAPE_LEN] = {0};
-    size_t ip = 0;
-    char* ptr = mem;
-
-    Token_t* tmp;
+    
+    char* ptr = mem;    // memory pointer
+    size_t ip = 0;      // instruction pointer
+    
+    Tok* tmp;
     while ( ip < len(tokens) ) {
-        tmp = (Token_t*)tokens->data[ip];
+        tmp = tokens->data[ip];
         switch ( tmp->flag ) {
             case SUM:
                 *ptr += tmp->n;
@@ -193,8 +194,6 @@ void nerv(const char* p) {
         ++ip;
     }
 
-    for (size_t i = 0; i < len(tokens); ++i)
-        free((Token_t*)tokens->data[i]);
     Destroy(tokens);
 }
 
@@ -215,7 +214,7 @@ void nervc(const char* p, const char* path) {
     fprintf(out, "#include <stdio.h>\n\n\n\nint main(void) {\n\tchar mem[%d] = {0};\n\tchar* ptr = mem;\n", TAPE_LEN);
     for (size_t i = 0; i < len(tokens); ++i) {
         // first, indent
-        Token_t* t = (Token_t*)tokens->data[i];
+        Tok* t = tokens->data[i];
         char buffer[9999] = {0};
 
         for (int j = 0; j < indent - (t->flag == LOOP_END); ++j)
