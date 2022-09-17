@@ -9,7 +9,7 @@ typedef enum TOKEN_TYPE {
     SHR,            // Shift the memory ptr to the right by x
     SHL,            // Shift the memory ptr to the left by x
     OUT,            // Print cell value as ASCII 
-    IN,             // User I/O
+    IN,             // Read from stdin
     COM,            // Comment
     MEM_SET,        // Set the current cell value to x
     MOV_SUM,        // Add the current cell value to another cell by a given offset (Destructive to the current cell's value)
@@ -18,7 +18,7 @@ typedef enum TOKEN_TYPE {
 
 // Brainfuck Token structure
 typedef struct Tok {
-    TOKEN_TYPE flag;
+    TOKEN_TYPE flag;    // enumerated type representing the type of instruction the token encodes
     int n;              // number of times to apply the operation (computed by run length encoding)
     int offset;         // the position to offset the command
 } Tok;
