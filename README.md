@@ -11,5 +11,7 @@ Nerv is an optimizing toolchain for interacting with Brainfuck programs. It incl
 
 > Possibly write an API
 
+> Add optimization flags
+
 ## Why bother with optimizations?
 Brainfuck is a heinously innefficient language, and is rather easy to optimize.

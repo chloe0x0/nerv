@@ -65,6 +65,10 @@ void Comp_Loops(List_t* Tokens) {
 
                 Multiplication Loops:
                 MEM_MOV loops: 
+        The optimizer takes a pointer to a list of tokens
+        It will optimize the tokens and place them in a second list
+        the original list will be freed from memory
+        the pointer will now point to the new, optimized list
 */
 void Optimizer(List_t* tokens);
 
