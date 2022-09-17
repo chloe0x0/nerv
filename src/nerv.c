@@ -133,7 +133,7 @@ List_t* Lexer(const char* p) {
         ip++;
 
         if (t->flag == COM) { free(t); continue; } // Ignore other characters as comments
-        Append(Tokens, (void*)t);
+        Append(Tokens, t);
     } 
     
     // Compute loop offsets
