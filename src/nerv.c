@@ -217,6 +217,7 @@ void nervc(const char* p, const char* path) {
     for (size_t i = 0; i < len(tokens); ++i) {
         // first, indent
         Token_t* t = (Token_t*)tokens->data[i];
+        char buffer[9999] = {0};
 
         for (int j = 0; j < indent - (t->flag == LOOP_END); ++j)
             fputc('\t', out);
