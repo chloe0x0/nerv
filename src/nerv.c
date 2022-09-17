@@ -12,7 +12,6 @@
 
 // Lookup table to print the token type as a string
 const char* Flag_LT[10] = {"SUM", "SUB", "LOOP_START", "LOOP_END", "SHR", "SHL", "OUT", "IN", "COM", "MEM_SET"};
-const char* instr[10] = {"+", "-", "[", "]", ">", "<", ".", ",", "", ""};
 
 // Convert Brainfuck Code to a set of Tokens
 // Use of run length encoding to reduce redundancy and optimize the program
