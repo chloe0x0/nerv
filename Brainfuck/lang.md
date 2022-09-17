@@ -28,6 +28,6 @@ char* ptr = mem;
 
 A simple Cat program in BF looks like this:
 
-```bf
+```brainfuck
 ,[.,]
 ```
