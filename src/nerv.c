@@ -13,6 +13,26 @@
 // Lookup table to print the token type as a string
 const char* Flag_LT[10] = {"SUM", "SUB", "LOOP_START", "LOOP_END", "SHR", "SHL", "OUT", "IN", "COM", "MEM_SET"};
 
+/*
+    Read a brainfuck file given a path and a buffer
+    Returns a boolean indicating wether or not the file was succesfully read into the buffer
+*/
+bool Read_BF(const char* p, char* buff) {
+    FILE* fp = fopen(p, "r");
+    if (!fp) {
+        return false;
+    }
+
+    char c;
+    while( !feof(fp) ) {
+        c = fgetc(fp);
+        if (c != ' ') { *buff++ = c; }
+    }
+    *buff = '\0';
+
+    return true;
+}
+
 // Convert Brainfuck Code to a set of Tokens
 // Use of run length encoding to reduce redundancy and optimize the program
 // A basic example: 
