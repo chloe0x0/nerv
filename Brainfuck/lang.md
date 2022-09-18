@@ -2,7 +2,7 @@
 
 Brainfuck is a Turing Complete esoteric programming language made by Urban Müller in 1993. The language operates on an infinite tape of discrete memory cells where each cell contains a single byte. 
 
-The 
+The number of cells on the tape, the datatype of each cell, how to handle the pointer going off either end of the tape, or cell value overflows, are all left up to the implementor. 
 
 The tape is modified by way of a memory pointer which can increment/ decrement the value of the cell it is pointing at, and move one cell to the left or right. The memory pointer is often positioned in the middle of the tape 
 
