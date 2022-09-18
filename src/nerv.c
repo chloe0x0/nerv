@@ -54,14 +54,16 @@ bool Read_BF(const char* p, char* buff) {
 // Function to compute loop offsets
 // An alternative method uses Lookup Tables
 // The problem is that this often uses more space than necessary
+// so just store loop jumps in the IR
+// This optimization only aims to improve the Interpreter
 void Comp_Loops(List_t* Tokens) {
     for (size_t i = 0; i < len(Tokens); ++i) {
         Tok* token = Tokens->data[i];
         if (token->flag != LOOP_START) { continue; }
         
         // Scan ahead for next matching loop end token
-        int count = 1;
-        int scan = 1;
+        int count, scan;
+        count = scan = 1;
         while (count) {
             TOKEN_TYPE tmp = (Tokens->data[i + scan])->flag;
             count += (tmp == LOOP_START) + (-1 * (tmp==LOOP_END));
