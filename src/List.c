@@ -7,11 +7,15 @@
 List_t* Cons(size_t c0) {
     List_t* xs = malloc(sizeof(List_t));
     if (!xs) {
-        fprintf(stderr, "Could not allocate memory for the list of capacity: %lu \n", c0);
+        fprintf(stderr, "Could not allocate memory for the list\n");
         exit(EXIT_FAILURE);
     }
 
     xs->data = malloc(sizeof(Tok*) * c0);
+    if (!xs->data) {
+        fprintf(stderr, "Could not allocate memory for the list of capacity: %lu \n", c0);
+        exit(EXIT_FAILURE);
+    }
 
     xs->cap = c0;   
     xs->len = 0;

@@ -104,16 +104,21 @@ void Optimizer(List_t* tokens) {
     Lexer converts a stream of characters into a list of tokens
     These tokens can be interpreted, or compiled into another language
 
-    A few optimization steps can be done during the tokenization process, such as peephole optimization
+    A few optimization steps can be easily done during the tokenization process, such as peephole optimization
     or compiling [-] | [+] loops to MEM_SET instructions 
 
+    Peephole optimizations:
+        whenever any of the following tokens are encountered: +, -, >, <
+        a consuming scan is done to roll all 
 
 */
 List_t* Lexer(const char* p) {
     List_t* Tokens = Cons(25);
 
-    size_t ip = 0;
-    size_t len = strlen(p);
+    size_t ip, len;
+    ip = 0;
+    len = strlen(p);
+    
     while (ip < len) {
         Tok* t = malloc(sizeof(Tok));
         t->offset = 0;
@@ -225,6 +230,8 @@ void nerv(const char* p) {
                 break;
             case MEM_SET:
                 *ptr = tmp->n;
+                break;
+            case COM:
                 break;
             default:
                 fprintf(stderr, "Unkown Token: { Flag: %d; Offset: %d; N: %d; } \n", tmp->flag, tmp->offset, tmp->n);

@@ -7,4 +7,4 @@ all:
 	$(CC) $(CFLAGS) nerv.c List.c
 
 clean:
-	del *.exe 
+	del *.exe && del out.c
