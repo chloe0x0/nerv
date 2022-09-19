@@ -2,9 +2,10 @@
 
 CC = gcc
 CFLAGS = -O2 -o nerv
+REMOVE = del # rm in Linux
 
 all:
 	$(CC) $(CFLAGS) nerv.c List.c
 
 clean:
-	del *.exe && del out.c
+	$(REMOVE) *.exe

@@ -15,6 +15,14 @@
 // Lookup table to print the token type as a string
 const char* Flag_LT[10] = {"SUM", "SUB", "LOOP_START", "LOOP_END", "SHR", "SHL", "OUT", "IN", "COM", "MEM_SET"};
 
+// Enumerated type to encode optimization levels
+// O2 includes O2 optimizations as well as all lower optimization levels
+typedef enum Opt {
+    O0,        // No optimizations
+    O1,        // Peephole optimizations
+    O2,        // Dead code removal, loop unrolling
+} Opt;
+
 /*
     Read a brainfuck file given a path and a buffer
     Returns a boolean indicating wether or not the file was succesfully read into the buffer
@@ -108,36 +116,37 @@ void Optimizer(List_t* tokens) {
     or compiling [-] | [+] loops to MEM_SET instructions 
 
     Peephole optimizations:
-        whenever any of the following tokens are encountered: +, -, >, <
-        a consuming scan is done to roll all 
+        compile long runs of >, <, +, - into singular tokens
+
+    args:
+        p := program to tokenize
+        opt := optimization level
 
 */
-List_t* Lexer(const char* p) {
+List_t* Lexer(const char* p, Opt opt) {
     List_t* Tokens = Cons(25);
 
     size_t ip, len;
     ip = 0;
     len = strlen(p);
+
+    Tok* t;
     
+    char c;
+
     while (ip < len) {
-        Tok* t = malloc(sizeof(Tok));
+        t = malloc(sizeof(Tok));
         t->offset = 0;
         t->n = 1;
 
-        switch (p[ip]) {
+        c = p[ip];
+
+        switch (c) {
             case '+':
                 t->flag = SUM;
-                while (p[++ip] == '+') {
-                    t->n++;
-                }
-                ip--;
                 break;
             case '-':
                 t->flag = SUB;
-                while (p[++ip] == '-') {
-                    t->n++;
-                }
-                ip--;
                 break;
             case '.':
                 t->flag = OUT;
@@ -148,33 +157,41 @@ List_t* Lexer(const char* p) {
             case '[':
                 // Via a basic non-consuming scan we can identify specific loop constructs and reduce them to single instructions
                 // Reduce [-] and [+] loops to MEM_SET instructions
-                if ((p[ip+1] == '-' || p[ip+1] == '+') && (p[ip+2] == ']')) {
-                    t->flag = MEM_SET; t->n = 0; ip+=2;
+                if (opt != O2) { t->flag = LOOP_START; }
+                else {
+                    if ((p[ip+1] == '-' || p[ip+1] == '+') && (p[ip+2] == ']')) {
+                        t->flag = MEM_SET; 
+                        t->n = 0; 
+                        ip+=2;
+                    } else {
+                        t->flag = LOOP_START;
+                    }
                 }
-                else { t->flag = LOOP_START; }
                 break;
             case ']':
                 t->flag = LOOP_END;
                 break;
             case '>':
                 t->flag = SHR;
-                while (p[++ip] == '>') {
-                    t->n++;
-                }
-                ip--;
                 break;
             case '<':
                 t->flag = SHL;
-                while (p[++ip] == '<') {
-                    t->n++;
-                }
-                ip--;
                 break;
             default:
                 t->flag = COM;
-                break;
-            
+                break;   
         }
+
+        // perform peephole optimization if opt level greater than or equal to O1
+        if (opt >= O1) {
+            if (c == '-' || c == '+' || c == '>' || c == '<') {
+                while (p[++ip] == c) {
+                    t->n++;
+                }
+                ip--;
+            }
+        }
+
         ip++;
 
         if (t->flag == COM) { free(t); continue; } // Ignore other characters as comments
@@ -188,8 +205,8 @@ List_t* Lexer(const char* p) {
 }
 
 // Basic interpreter
-void nerv(const char* p) {
-    List_t* tokens = Lexer(p);
+void nerv(const char* p, Opt o) {
+    List_t* tokens = Lexer(p, o);
 
     char mem[TAPE_LEN] = {0};
     
@@ -245,7 +262,7 @@ void nerv(const char* p) {
 }
 
 // BF -> C Compiler
-void nervc(const char* p, const char* path) {
+void nervc(const char* p, const char* path, Opt o) {
     FILE* out = fopen(path, "w");
 
     if (!out) {
@@ -255,7 +272,7 @@ void nervc(const char* p, const char* path) {
  
     size_t indent = 1; // Number of tabs for each line, starts at 1 for the main function
 
-    List_t* tokens = Lexer(p);
+    List_t* tokens = Lexer(p, o);
 
     // Write chunks instead of calling fwrite for every token
     char buffer[BUFFER_SIZE + 64] = {0};
@@ -344,7 +361,7 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "Invalid parens! \n");
         exit(EXIT_FAILURE);
     }
-    nervc(prog, DEF_OUT);
+    nervc(prog, DEF_OUT, O2);
     system("gcc -o out out.c -O3");
 
     clock_t t = clock();
