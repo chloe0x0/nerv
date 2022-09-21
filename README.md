@@ -9,8 +9,6 @@ Nerv is an optimizing toolchain for interacting with Brainfuck programs. It incl
 
 > Possibly write an API
 
-> Add optimization flags
-
 > Build Visualizer
 
 ## Why bother with optimizations?
