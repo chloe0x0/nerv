@@ -103,7 +103,13 @@ void Comp_Loops(List_t* Tokens) {
         the pointer will now point to the new, optimized list
 */
 void Optimizer(List_t* tokens) {
+    List_t* opt = Cons(len(tokens));
 
+    Tok* t;
+    for (size_t i = 0; i < len(tokens); ++i) { 
+        t = tokens->data[i];
+        
+    }
 }
 
 // Lexer
@@ -356,16 +362,40 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    Opt opt_flag = O2;
+    if (argc > 2) {
+        // parse opt level
+        if      (!strcmp(argv[2], "-O0")) { opt_flag = O0; }
+        else if (!strcmp(argv[2], "-O1")) { opt_flag = O1; }
+        else if (!strcmp(argv[2], "-O2")) { opt_flag = O2; }
+        else {
+            fprintf(stderr, "Invalid optimization flag: `%s` !", argv[2]);
+            exit(EXIT_FAILURE);
+        }
+    }
+
     const char* prog = str;
     if (!validate_loops(prog)) {
         fprintf(stderr, "Invalid parens! \n");
         exit(EXIT_FAILURE);
     }
-    nervc(prog, DEF_OUT, O2);
-    system("gcc -o out out.c -O3");
 
-    clock_t t = clock();
-    system("out");
-    t = clock() - t;
-    printf("Time taken to execute %s | %f \n", argv[1], (double)t / CLOCKS_PER_SEC);
+    if (argc > 3) {
+        if (!strcmp(argv[3], "-i")) {
+            clock_t t = clock();
+            nerv(prog, opt_flag);
+            t = clock() - t;
+
+            printf("Time taken to execute %s | %f \n", argv[1], (double)t / CLOCKS_PER_SEC);
+        }
+        else {
+            nervc(prog, DEF_OUT, opt_flag);
+            system("gcc -o out out.c -O3");
+
+            clock_t t = clock();
+            system("out");
+            t = clock() - t;
+            printf("Time taken to execute %s | %f \n", argv[1], (double)t / CLOCKS_PER_SEC);
+        }
+    }
 }
