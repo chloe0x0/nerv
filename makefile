@@ -1,7 +1,7 @@
 # Barebones makefile, make it better later !!
 
 CC = gcc
-CFLAGS = -O2 -o nerv
+CFLAGS = -Wall -O2 -o nerv
 REMOVE = del # rm in Linux
 
 all:
@@ -9,3 +9,4 @@ all:
 
 clean:
 	$(REMOVE) *.exe
+	$(REMOVE) out.c

@@ -19,8 +19,8 @@ typedef enum TOKEN_TYPE {
 // Brainfuck Token structure
 typedef struct Tok {
     TOKEN_TYPE flag;    // enumerated type representing the type of instruction the token encodes
-    int n;              // number of times to apply the operation (computed by run length encoding)
-    int offset;         // the position to offset the command
+    size_t n;              // number of times to apply the operation (computed by run length encoding)
+    size_t offset;         // the position to offset the command
 } Tok;
 
 #endif
