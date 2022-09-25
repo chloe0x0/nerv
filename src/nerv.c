@@ -3,12 +3,12 @@
 #include <stdbool.h>
 #include <string.h>
 #include <time.h>
-#include "List.h"
-#include "Token.h"
+#include "../include/List.h"
+#include "../include/Token.h"
 
 // Constants
 #define DEBUG 1
-#define USE_GETC 1
+#define USE_GETC 0
 #define TAPE_LEN 90000
 #define MAX_INT_DIGITS 10
 #define FLAG_PREFIX '-'
@@ -41,9 +41,7 @@ bool Read_BF(const char* p, char* buff) {
             if (c != ' ') { *buff++ = c; }
         }
         *buff = '\0';
-    #endif
-
-    #if !USE_GETC
+    #else
         char* program = NULL;
 
         if (fseek(fp, 0L, SEEK_END) == 0) {
@@ -70,10 +68,9 @@ bool Read_BF(const char* p, char* buff) {
             if (ferror(fp) != 0) {
                 fprintf(stderr, "Error reading file to buffer from %s\n", p);
                 exit(EXIT_FAILURE);
-            } else {
-                program[len++] = '\0';
             }
 
+            program[len++] = '\0';
             memcpy(buff, program, strlen(program) + 1);
             free(program);
         } else {
@@ -82,6 +79,21 @@ bool Read_BF(const char* p, char* buff) {
     #endif
 
     return true;
+}
+
+// Helper function to ensure that incoming expressions have well formed loops
+bool validate_loops(const char* prog) {
+    size_t l, r;
+    l = r = 0;
+
+    const char* tmp = prog;
+
+    do {
+        l += (*tmp == ']');
+        r += (*tmp == '[');
+    } while(*(tmp++) != '\0');
+
+    return l == r;
 }
 
 // Convert Brainfuck Code to a set of Tokens
@@ -129,7 +141,7 @@ void Comp_Loops(List_t* Tokens) {
         count = scan = 1;
         while (count) {
             TOKEN_TYPE tmp = (Tokens->data[i + scan])->flag;
-            count += (tmp == LOOP_START) + (-1 * (tmp==LOOP_END));
+            count += (tmp == LOOP_START) - (tmp==LOOP_END);
             scan++;
         }
         token->offset = scan + i - 1;
@@ -154,17 +166,7 @@ void Comp_Loops(List_t* Tokens) {
         the original list will be freed from memory
         the pointer will now point to the new, optimized list
 */
-void Optimizer(List_t* tokens) {
-    List_t* opt = Cons(len(tokens));
-
-    Tok* t;
-    for (size_t i = 0; i < len(tokens); ++i) { 
-        t = tokens->data[i];
-        if (t->flag != LOOP_START) { continue; }
-        // loop to end of loop
-
-    }
-}
+void Optimizer(List_t* tokens);
 
 // Lexer
 /*
@@ -260,10 +262,6 @@ List_t* Lexer(const char* p, Opt opt) {
     
     // Compute loop offsets
     Comp_Loops(Tokens);
-
-    #if DEBUG
-        printf("Tokenizer: %zu tokens parsed\n", len(Tokens));
-    #endif
 
     return Tokens;
 }
@@ -390,6 +388,8 @@ void nervc(const char* p, const char* path, Opt o) {
                 indent++;
                 buffer_len += sprintf(&buffer[buffer_len], "while (*ptr) {\n"); 
                 break;
+            case COM:
+                break;
         }
     }
     if (buffer_len > 0) {
@@ -397,21 +397,6 @@ void nervc(const char* p, const char* path, Opt o) {
     }
     fputs("}", out);  // End of the main function
     fclose(out);
-}
-
-// Helper function to ensure that incoming expressions have well formed loops
-bool validate_loops(const char* prog) {
-    size_t l, r;
-    l = r = 0;
-
-    const char* tmp = prog;
-
-    do {
-        l += (*tmp == ']');
-        r += (*tmp == '[');
-    } while(*(tmp++) != '\0');
-
-    return l == r;
 }
 
 // Can interpret the tokens, or compile to C code to further optimize with the C compiler

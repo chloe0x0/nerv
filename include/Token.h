@@ -12,15 +12,14 @@ typedef enum TOKEN_TYPE {
     IN,             // Read from stdin
     COM,            // Comment
     MEM_SET,        // Set the current cell value to x
-    MOV_SUM,        // Add the current cell value to another cell by a given offset (Destructive to the current cell's value)
-    MUL,            // Multiplication to a cell at a given offset by X*c where c is the current cell value
 } TOKEN_TYPE;
 
 // Brainfuck Token structure
 typedef struct Tok {
-    TOKEN_TYPE flag;    // enumerated type representing the type of instruction the token encodes
-    size_t n;              // number of times to apply the operation (computed by run length encoding)
-    size_t offset;         // the position to offset the command
+    TOKEN_TYPE flag;   // enumerated type representing the type of instruction the token encodes
+    size_t n;          // number of times to apply the operation (computed by run length encoding)
+    size_t offset;     // the position to offset the command
+                       // in the event that the token is a loop it is the position to jump to during looping
 } Tok;
 
 #endif
