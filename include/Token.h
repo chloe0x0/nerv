@@ -1,6 +1,8 @@
 #ifndef __TOKEN_H_
 #define __TOKEN_H_
 
+/* Nerv's IR */
+
 typedef enum TOKEN_TYPE {
     SUM,            // Add x to the current cell
     SUB,            // Subtract x from the current cell

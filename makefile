@@ -5,7 +5,7 @@ CFLAGS = -Wall -O2 -o nerv
 REMOVE = del # rm in Linux
 
 all:
-	$(CC) $(CFLAGS) ./src/nerv.c ./src/List.c
+	$(CC) $(CFLAGS) ./src/main.c ./src/nerv.c ./src/List.c
 
 clean:
 	$(REMOVE) *.exe

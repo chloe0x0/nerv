@@ -5,6 +5,8 @@
 #include <time.h>
 #include "../include/List.h"
 #include "../include/Token.h"
+#include "../include/Opt.h"
+#include "../include/nerv.h"
 
 // Constants
 #define DEBUG 1
@@ -16,13 +18,7 @@
 #define BUFFER_SIZE 512  // num of bytes to read before writting to a file
                          // used to buffer file writes 
 
-// Enumerated type to encode optimization levels
-// O2 includes O2 optimizations as well as all lower optimization levels
-typedef enum Opt {
-    O0,     // No optimizations
-    O1,     // Peephole optimizations
-    O2,     // Dead code removal, loop unrolling
-} Opt;
+
 
 /*
     Read a brainfuck file given a path and a buffer
@@ -400,7 +396,7 @@ void nervc(const char* p, const char* path, Opt o) {
 }
 
 // Can interpret the tokens, or compile to C code to further optimize with the C compiler
-
+/*
 int main(int argc, char* argv[]) {
     char* str = malloc(sizeof(char) * 10000000);
     if (!Read_BF(argv[1], str)) {
@@ -447,3 +443,4 @@ int main(int argc, char* argv[]) {
         }
     }
 }
+*/
