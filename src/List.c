@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "../include/Token.h"
-#include "../include/List.h"
+#include "Token.h"
+#include "List.h"
 
 // Constructor
 List_t* Cons(size_t c0) {

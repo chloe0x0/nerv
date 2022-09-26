@@ -3,10 +3,10 @@
 #include <stdbool.h>
 #include <string.h>
 #include <time.h>
-#include "../include/List.h"
-#include "../include/Token.h"
-#include "../include/Opt.h"
-#include "../include/nerv.h"
+#include "List.h"
+#include "Token.h"
+#include "Opt.h"
+#include "nerv.h"
 
 // Constants
 #define DEBUG 1

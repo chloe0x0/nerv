@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../include/nerv.h"
+#include "nerv.h"
 
 int main(void) {
     char buffer[500];

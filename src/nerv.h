@@ -2,8 +2,8 @@
 #define __NERV_H
 
 #include <stdbool.h>
-#include "../include/List.h"
-#include "../include/Opt.h"
+#include "List.h"
+#include "Opt.h"
 
 // Read BF File to buffer
 bool Read_BF(const char*, char*);
