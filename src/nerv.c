@@ -28,14 +28,14 @@ bool Read_BF(const char* p, char* buff, size_t buffer_size) {
         return false;
     }
 
-    #if USE_GETC
+#if USE_GETC
         char c;
         while ( !feof(fp) ) {
             c = fgetc(fp);
             if (c != ' ') { *buff++ = c; }
         }
         *buff = '\0';
-    #else
+#else
         char* program = NULL;
 
         if (fseek(fp, 0L, SEEK_END) == 0) {
@@ -65,7 +65,7 @@ bool Read_BF(const char* p, char* buff, size_t buffer_size) {
             }
 
             if (len > buffer_size) {
-                fprintf(stderr, "Buffer size of %zu is too small. Read %zu chars!\n", buffer_size, len);
+                fprintf(stderr, "Buffer size of %u is too small. Read %u chars!\n", buffer_size, len);
                 exit(EXIT_FAILURE);
             }
 
@@ -75,7 +75,7 @@ bool Read_BF(const char* p, char* buff, size_t buffer_size) {
         } else {
             return false;
         }
-    #endif
+#endif
 
     return true;
 }

@@ -13,7 +13,7 @@ List_t* Cons(size_t c0) {
 
     xs->data = malloc(sizeof(Tok*) * c0);
     if (!xs->data) {
-        fprintf(stderr, "Could not allocate memory for the list of capacity: %zu \n", c0);
+        fprintf(stderr, "Could not allocate memory for the list of capacity: %u \n", c0);
         exit(EXIT_FAILURE);
     }
 
@@ -31,7 +31,7 @@ void Append(List_t* xs, Tok* e) {
         xs->data = realloc(xs->data, sizeof(Tok*) * xs->cap+1);
 
         if (!xs->data) {
-            fprintf(stderr, "Could not reallocate memory for the list of capacity: %zu\n", xs->cap);
+            fprintf(stderr, "Could not reallocate memory for the list of capacity: %u\n", xs->cap);
             exit(EXIT_FAILURE);
         }
     }
