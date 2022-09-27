@@ -15,10 +15,8 @@
 #define MAX_INT_DIGITS 10
 #define FLAG_PREFIX '-'
 #define DEF_OUT  "out.c"
-#define BUFFER_SIZE 512  // num of bytes to read before writting to a file
+#define BUFFER_SIZE 4096 // num of bytes to read before writting to a file
                          // used to buffer file writes 
-
-
 
 /*
     Read a brainfuck file given a path and a buffer
@@ -66,7 +64,7 @@ bool Read_BF(const char* p, char* buff, size_t buffer_size) {
                 exit(EXIT_FAILURE);
             }
 
-            if (len > BUFFER_SIZE) {
+            if (len > buffer_size) {
                 fprintf(stderr, "Buffer size of %zu is too small. Read %zu chars!\n", buffer_size, len);
                 exit(EXIT_FAILURE);
             }
