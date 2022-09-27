@@ -211,18 +211,13 @@ List_t* Lexer(const char* p, Opt opt) {
         c = p[ip];
 
         switch (c) {
-            case '+':
-                t->flag = SUM;
-                break;
-            case '-':
-                t->flag = SUB;
-                break;
-            case '.':
-                t->flag = OUT;
-                break;
-            case ',':
-                t->flag = IN;
-                break;
+            case '+': t->flag = SUM;        break;
+            case '-': t->flag = SUB;        break;
+            case '.': t->flag = OUT;        break;
+            case ',': t->flag = IN;         break;
+            case '>': t->flag = SHR;        break;
+            case '<': t->flag = SHL;        break;
+            case ']': t->flag = LOOP_END;   break;
             case '[':
                 // Via a basic non-consuming scan we can identify specific loop constructs and reduce them to single instructions
                 // Reduce [-] and [+] loops to MEM_SET instructions
@@ -237,23 +232,12 @@ List_t* Lexer(const char* p, Opt opt) {
                     }
                 }
                 break;
-            case ']':
-                t->flag = LOOP_END;
-                break;
-            case '>':
-                t->flag = SHR;
-                break;
-            case '<':
-                t->flag = SHL;
-                break;
-            default:
-                t->flag = COM;
-                break;   
+            default: t->flag = COM;  break;   
         }
 
         // perform peephole optimization if opt level greater than or equal to O1
         if (opt >= O1) {
-            if (c == '-' || c == '+' || c == '>' || c == '<') {
+            if (strchr("><+-", c)) {
                 while (p[++ip] == c) {
                     t->n++;
                 }
