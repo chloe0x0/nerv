@@ -6,7 +6,7 @@
 #include "Opt.h"
 
 // Read BF File to buffer
-bool Read_BF(const char*, char*);
+bool Read_BF(const char*, char*, size_t);
 // Compute whether or not a program has valid parens
 bool validate_loop(const char*);
 // Compute loop jumps and store in the IR

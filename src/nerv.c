@@ -24,7 +24,7 @@
     Read a brainfuck file given a path and a buffer
     Returns a boolean indicating wether or not the file was succesfully read into the buffer
 */
-bool Read_BF(const char* p, char* buff) {
+bool Read_BF(const char* p, char* buff, size_t buffer_size) {
     FILE* fp = fopen(p, "r");
     if (!fp) {
         return false;
@@ -63,6 +63,11 @@ bool Read_BF(const char* p, char* buff) {
         
             if (ferror(fp) != 0) {
                 fprintf(stderr, "Error reading file to buffer from %s\n", p);
+                exit(EXIT_FAILURE);
+            }
+
+            if (len > BUFFER_SIZE) {
+                fprintf(stderr, "Buffer size of %zu is too small. Read %zu chars!\n", buffer_size, len);
                 exit(EXIT_FAILURE);
             }
 
@@ -150,17 +155,25 @@ void Comp_Loops(List_t* Tokens) {
 /*
         The following loops are unrolled into single operations:
 
-                [->+<]
-                    or
-                        [-<+>]
+                [->+<] or [-<+>]
 
 
                 Multiplication Loops:
-                MEM_MOV loops: 
-        The optimizer takes a pointer to a list of tokens
-        It will optimize the tokens and place them in a second list
-        the original list will be freed from memory
-        the pointer will now point to the new, optimized list
+        
+        
+        Synopsis:
+            The optimizer takes a pointer to a list of tokens
+            It will optimize the tokens and place them in a second list
+            the original list will be freed from memory
+            the pointer will now point to the new, optimized list
+
+
+
+        Lets analyze the structure of a Multiplication Loop
+
+        1: There must be a Sub(1) instruction at the start or end of the loop
+        2: 
+
 */
 void Optimizer(List_t* tokens);
 
