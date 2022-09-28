@@ -9,16 +9,16 @@
 // Dynamic Array to store Tokens
 typedef struct List_t {
     size_t cap, len;
-    Tok** data;
+    Tok **data;
 } List_t;
 
 // Constructor
-List_t* Cons(size_t);
+List_t *Cons(size_t);
 // Destructor
-void Destroy(List_t*);
+void Destroy(List_t *);
 // Append to the end of the list
-void Append(List_t*, Tok*);
+void Append(List_t *, Tok *);
 // Get len of list
-static inline size_t len(List_t* xs) { return xs->len; }
+static inline size_t len(List_t *xs) { return xs->len; }
 
 #endif
