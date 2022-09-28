@@ -1,3 +1,5 @@
 *.exe  
 *.vscode
 out.c
+a.c
+tmp.out

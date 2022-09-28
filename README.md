@@ -2,6 +2,14 @@
 
 Nerv is an optimizing toolchain for interacting with Brainfuck programs. It includes an Interpreter, Visualizer, and Brainfuck to C compiler.
 
+## usage
+
+```console
+git clone https://github.com/chloe0x0/nerv.git
+cd nerv
+make
+```
+
 ## TODO
 > More complex loop unrolling
 
