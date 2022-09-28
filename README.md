@@ -9,6 +9,11 @@ git clone https://github.com/chloe0x0/nerv.git
 cd nerv
 make
 ```
+## testing
+```console
+make test
+test.exe
+```
 
 ## TODO
 > More complex loop unrolling

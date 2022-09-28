@@ -7,7 +7,8 @@
 #define R 2
 
 // Dynamic Array to store Tokens
-typedef struct List_t {
+typedef struct List_t
+{
     size_t cap, len;
     Tok **data;
 } List_t;

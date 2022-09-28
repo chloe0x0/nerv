@@ -3,10 +3,11 @@
 
 // Enumerated type to encode optimization levels
 // O2 includes O2 optimizations as well as all lower optimization levels
-typedef enum Opt {
-    O0,     // No optimizations
-    O1,     // Peephole optimizations
-    O2,     // Dead code removal, loop unrolling
+typedef enum Opt
+{
+    O0, // No optimizations
+    O1, // Peephole optimizations
+    O2, // Dead code removal, loop unrolling
 } Opt;
 
 #endif
