@@ -9,12 +9,9 @@
 #include "nerv.h"
 
 // Constants
-#define DEBUG 1
 #define USE_GETC 0
 #define TAPE_LEN 90000
 #define MAX_INT_DIGITS 10
-#define FLAG_PREFIX '-'
-#define DEF_OUT  "out.c"
 #define BUFFER_SIZE 4096 // num of bytes to read before writting to a file
                          // used to buffer file writes 
 
@@ -399,59 +396,11 @@ void nervc(const char* p, const char* path, Opt o) {
                 break;
         }
     }
+ 
     if (buffer_len > 0) {
         fwrite(buffer, 1, buffer_len, out);
     }
+
     fputs("}", out);  // End of the main function
     fclose(out);
 }
-
-// Can interpret the tokens, or compile to C code to further optimize with the C compiler
-/*
-int main(int argc, char* argv[]) {
-    char* str = malloc(sizeof(char) * 10000000);
-    if (!Read_BF(argv[1], str)) {
-        fprintf(stderr, "Could not read %s \n", argv[1]);
-        exit(EXIT_FAILURE);
-    }
-
-    Opt opt_flag = O2;
-    if (argc > 2) {
-        // parse opt level
-        if      (!strcmp(argv[2], "-O0")) { opt_flag = O0; }
-        else if (!strcmp(argv[2], "-O1")) { opt_flag = O1; }
-        else if (!strcmp(argv[2], "-O2")) { opt_flag = O2; }
-        else {
-            fprintf(stderr, "Invalid optimization flag: `%s` !", argv[2]);
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    const char* prog = str;
-    if (!validate_loops(prog)) {
-        fprintf(stderr, "Invalid parens! \n");
-        exit(EXIT_FAILURE);
-    }
-
-    if (argc > 3) {
-        if (!strcmp(argv[3], "-i")) {
-            clock_t t = clock();
-            nerv(prog, opt_flag);
-            t = clock() - t;
-
-            printf("Time taken to execute %s | %f \n", argv[1], (double)t / CLOCKS_PER_SEC);
-        } else if (!strcmp(argv[3], "-c")) {
-            nervc(prog, DEF_OUT, opt_flag);
-            system("gcc -o out out.c -O3");
-
-            clock_t t = clock();
-            system("out");
-            t = clock() - t;
-            printf("Time taken to execute %s | %f \n", argv[1], (double)t / CLOCKS_PER_SEC);
-        } else {
-            fprintf(stderr, "Invalid mode: `%s`\n", argv[3]);
-            exit(EXIT_FAILURE);
-        }
-    }
-}
-*/
