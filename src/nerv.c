@@ -419,7 +419,7 @@ void nervc(const char *p, const char *path, Opt o)
         }
 
         // write tabs to buffer
-        for (int j = 0; j < indent - (t->flag == LOOP_END); ++j)
+        for (size_t j = 0; j < indent - (t->flag == LOOP_END); ++j)
             buffer[buffer_len++] = '\t';
 
         switch (t->flag)

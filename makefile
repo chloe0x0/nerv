@@ -1,7 +1,7 @@
 # Barebones makefile, make it better later !!
 
 CC = gcc
-CFLAGS = -Wall -O2
+CFLAGS = -Wall -Wextra -O2
 REMOVE = del # rm -f in Linux
 
 all:
@@ -12,3 +12,4 @@ test:
 
 clean:
 	$(REMOVE) *.exe
+	$(REMOVE) tmp.out
