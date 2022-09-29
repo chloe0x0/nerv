@@ -83,10 +83,12 @@ bool Read_BF(const char *p, char *buff, size_t buffer_size)
     }
     else
     {
+        fclose(fp);
         return false;
     }
 #endif
 
+    fclose(fp);
     return true;
 }
 
@@ -280,26 +282,26 @@ List_t *Lexer(const char *p, Opt opt)
         }
 
         // perform peephole optimization if opt level greater than or equal to O1
-        if (opt >= O1)
+        if (opt >= O1 && strchr("><+-", c))
         {
-            if (strchr("><+-", c))
+            while (p[++ip] == c)
             {
-                while (p[++ip] == c)
-                {
-                    t->n++;
-                }
-                ip--;
+                t->n++;
             }
+            ip--;
         }
 
         ip++;
-
+        
+        // Ignore other characters as comments
         if (t->flag == COM)
         {
             free(t);
-            continue;
-        } // Ignore other characters as comments
-        Append(Tokens, t);
+        }
+        else
+        {
+            Append(Tokens, t);
+        }
     }
 
     // Compute loop offsets
