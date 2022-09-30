@@ -3,7 +3,7 @@
 
 /* Nerv's IR */
 
-typedef enum TOKEN_TYPE
+typedef enum 
 {
     SUM,        // Add x to the current cell
     SUB,        // Subtract x from the current cell
@@ -18,7 +18,7 @@ typedef enum TOKEN_TYPE
 } TOKEN_TYPE;
 
 // Brainfuck Token structure
-typedef struct Tok
+typedef struct 
 {
     TOKEN_TYPE flag; // enumerated type representing the type of instruction the token encodes
     size_t n;        // number of times to apply the operation (computed by run length encoding)

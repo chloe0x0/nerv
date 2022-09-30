@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include <time.h>
 #include "List.h"
 #include "Token.h"
 #include "Opt.h"
@@ -234,51 +233,51 @@ List_t *Lexer(const char *p, Opt opt)
 
         switch (c)
         {
-        case '+':
-            t->flag = SUM;
-            break;
-        case '-':
-            t->flag = SUB;
-            break;
-        case '.':
-            t->flag = OUT;
-            break;
-        case ',':
-            t->flag = IN;
-            break;
-        case '>':
-            t->flag = SHR;
-            break;
-        case '<':
-            t->flag = SHL;
-            break;
-        case ']':
-            t->flag = LOOP_END;
-            break;
-        case '[':
-            // Via a basic non-consuming scan we can identify specific loop constructs and reduce them to single instructions
-            // Reduce [-] and [+] loops to MEM_SET instructions
-            if (opt != O2)
-            {
-                t->flag = LOOP_START;
-            }
-            else
-            {
-                if ((p[ip + 1] == '-' || p[ip + 1] == '+') && (p[ip + 2] == ']'))
-                {
-                    t->flag = MEM_SET;
-                    t->n = 0;
-                    ip += 2;
-                }
-                else
+            case '+':
+                t->flag = SUM;
+                break;
+            case '-':
+                t->flag = SUB;
+                break;
+            case '.':
+                t->flag = OUT;
+                break;
+            case ',':
+                t->flag = IN;
+                break;
+            case '>':
+                t->flag = SHR;
+                break;
+            case '<':
+                t->flag = SHL;
+                break;
+            case ']':
+                t->flag = LOOP_END;
+                break;
+            case '[':
+                // Via a basic non-consuming scan we can identify specific loop constructs and reduce them to single instructions
+                // Reduce [-] and [+] loops to MEM_SET instructions
+                if (opt != O2)
                 {
                     t->flag = LOOP_START;
                 }
-            }
-            break;
-        default:
-            t->flag = COM;
-            break;
+                else
+                {
+                    if ((p[ip + 1] == '-' || p[ip + 1] == '+') && (p[ip + 2] == ']'))
+                    {
+                        t->flag = MEM_SET;
+                        t->n = 0;
+                        ip += 2;
+                    }
+                    else
+                    {
+                        t->flag = LOOP_START;
+                    }
+                }
+                break;
+            default:
+                t->flag = COM;
+                break;
         }
 
         // perform peephole optimization if opt level greater than or equal to O1
@@ -336,47 +335,47 @@ void nerv(const char *p, Opt o)
         tmp = tokens->data[ip];
         switch (tmp->flag)
         {
-        case SUM:
-            *ptr += tmp->n;
-            break;
-        case SUB:
-            *ptr -= tmp->n;
-            break;
-        case SHR:
-            ptr += tmp->n;
-            break;
-        case SHL:
-            ptr -= tmp->n;
-            break;
-        case LOOP_START:
-            if (!*ptr)
-            {
-                ip = tmp->offset - 1;
-            }
-            break;
-        case LOOP_END:
-            if (*ptr)
-            {
-                ip = tmp->offset - 1;
-            }
-            break;
-        case IN:
-            *ptr = getchar();
-            break;
-        case OUT:
+            case SUM:
+                *ptr += tmp->n;
+                break;
+            case SUB:
+                *ptr -= tmp->n;
+                break;
+            case SHR:
+                ptr += tmp->n;
+                break;
+            case SHL:
+                ptr -= tmp->n;
+                break;
+            case LOOP_START:
+                if (!*ptr)
+                {
+                    ip = tmp->offset - 1;
+                }
+                break;
+            case LOOP_END:
+                if (*ptr)
+                {
+                    ip = tmp->offset - 1;
+                }
+                break;
+            case IN:
+                *ptr = getchar();
+                break;
+            case OUT:
 #if CAP_OUT
-            fputc(*ptr, output);
+                fputc(*ptr, output);
 #endif
-            putchar(*ptr);
-            break;
-        case MEM_SET:
-            *ptr = tmp->n;
-            break;
-        case COM:
-            break;
-        default:
-            fprintf(stderr, "Unkown Token: { Flag: %d; Offset: %d; N: %d; } \n", tmp->flag, tmp->offset, tmp->n);
-            exit(EXIT_FAILURE);
+                putchar(*ptr);
+                break;
+            case MEM_SET:
+                *ptr = tmp->n;
+                break;
+            case COM:
+                break;
+            default:
+                fprintf(stderr, "Unkown Token: { Flag: %d; Offset: %d; N: %d; } \n", tmp->flag, tmp->offset, tmp->n);
+                exit(EXIT_FAILURE);
         }
 
         ++ip;
@@ -426,38 +425,38 @@ void nervc(const char *p, const char *path, Opt o)
 
         switch (t->flag)
         {
-        case SUM:
-            buffer_len += sprintf(&buffer[buffer_len], "*ptr += %d;\n", t->n);
-            break;
-        case SUB:
-            buffer_len += sprintf(&buffer[buffer_len], "*ptr -= %d;\n", t->n);
-            break;
-        case SHR:
-            buffer_len += sprintf(&buffer[buffer_len], "ptr += %d;\n", t->n);
-            break;
-        case SHL:
-            buffer_len += sprintf(&buffer[buffer_len], "ptr -= %d;\n", t->n);
-            break;
-        case MEM_SET:
-            buffer_len += sprintf(&buffer[buffer_len], "*ptr = %d;\n", t->n);
-            break;
-        case LOOP_END:
-            indent--;
-            buffer[buffer_len++] = '}';
-            buffer[buffer_len++] = '\n';
-            break;
-        case OUT:
-            buffer_len += sprintf(&buffer[buffer_len], "putchar(*ptr);\n");
-            break;
-        case IN:
-            buffer_len += sprintf(&buffer[buffer_len], "*ptr = getchar();\n");
-            break;
-        case LOOP_START:
-            indent++;
-            buffer_len += sprintf(&buffer[buffer_len], "while (*ptr) {\n");
-            break;
-        case COM:
-            break;
+            case SUM:
+                buffer_len += sprintf(&buffer[buffer_len], "*ptr += %d;\n", t->n);
+                break;
+            case SUB:
+                buffer_len += sprintf(&buffer[buffer_len], "*ptr -= %d;\n", t->n);
+                break;
+            case SHR:
+                buffer_len += sprintf(&buffer[buffer_len], "ptr += %d;\n", t->n);
+                break;
+            case SHL:
+                buffer_len += sprintf(&buffer[buffer_len], "ptr -= %d;\n", t->n);
+                break;
+            case MEM_SET:
+                buffer_len += sprintf(&buffer[buffer_len], "*ptr = %d;\n", t->n);
+                break;
+            case LOOP_END:
+                indent--;
+                buffer[buffer_len++] = '}';
+                buffer[buffer_len++] = '\n';
+                break;
+            case OUT:
+                buffer_len += sprintf(&buffer[buffer_len], "putchar(*ptr);\n");
+                break;
+            case IN:
+                buffer_len += sprintf(&buffer[buffer_len], "*ptr = getchar();\n");
+                break;
+            case LOOP_START:
+                indent++;
+                buffer_len += sprintf(&buffer[buffer_len], "while (*ptr) {\n");
+                break;
+            case COM:
+                break;
         }
     }
 
