@@ -13,6 +13,9 @@
 #define BUFFER_SIZE 4096 // num of bytes to read before writting to a file
 #define CAP_OUT 1        // whether or not to output interpreter output to tmp.out
 
+// Lookup table to print enum values as strings
+const char *Flag_LT[10] = {"Sum", "Sub", "Loop_Start", "Loop_End", "SHR", "SHL", "OUT", "IN", "COM", "MEM_SET"};
+
 /*
     Read a brainfuck file given a path and a buffer
     Returns a boolean indicating wether or not the file was succesfully read into the buffer
@@ -149,9 +152,7 @@ void Comp_Loops(List_t *Tokens)
     {
         Tok *token = Tokens->data[i];
         if (token->flag != LOOP_START)
-        {
             continue;
-        }
 
         // Scan ahead for next matching loop end token
         int count, scan;
@@ -192,7 +193,72 @@ void Comp_Loops(List_t *Tokens)
         2:
 
 */
-void Optimizer(List_t *tokens);
+List_t *Optimizer(List_t *tokens)
+{
+    List_t *opt = Cons(50);
+
+    Tok *t, *scn, *opt_tok;
+
+    bool pass_over, c;
+    c = pass_over = false;
+
+    for (size_t i = 0; i < len(tokens) - 1; ++i)
+    {
+        t = tokens->data[i];
+        scn = tokens->data[i + 1];
+
+        opt_tok = malloc(sizeof(Tok));
+        opt_tok->offset = t->offset;
+
+        switch (t->flag)
+        {
+            case SUM:
+                c = (scn->flag == SUB);
+                opt_tok->n = t->n - (c*scn->n);
+                i += c;
+                pass_over = c ? true : pass_over;
+                if (opt_tok->n == 0) {
+                    opt_tok = NULL;
+                    i++;
+                }
+                else
+                    opt_tok->flag = opt_tok->n > 0 ? SUM : SUB;
+                break;
+            case SUB:
+                c = (scn->flag == SUM);
+                opt_tok->n = t->n - (c*scn->n);
+                i += c;
+                pass_over = c ? true : pass_over;
+                if (opt_tok->n == 0) {
+                    opt_tok = NULL;
+                    i++;
+                }
+                else
+                    opt_tok->flag = opt_tok->n > 0 ? SUB : SUM;
+                break;
+            default:
+                opt_tok->flag = t->flag;
+                opt_tok->n = t->n;
+                opt_tok->offset = t->offset;
+                break;
+        }
+
+        if (opt_tok != NULL)
+            Append(opt, opt_tok);
+    }
+
+    Append(opt, tokens->data[len(tokens) - 1]);
+
+    Comp_Loops(opt);
+
+    free(tokens);
+
+    if (pass_over) {
+        return Optimizer(opt);
+    }
+
+    return opt;
+}
 
 // Lexer
 /*
@@ -258,9 +324,7 @@ List_t *Lexer(const char *p, Opt opt)
                 // Via a basic non-consuming scan we can identify specific loop constructs and reduce them to single instructions
                 // Reduce [-] and [+] loops to MEM_SET instructions
                 if (opt != O2)
-                {
                     t->flag = LOOP_START;
-                }
                 else
                 {
                     if ((p[ip + 1] == '-' || p[ip + 1] == '+') && (p[ip + 2] == ']'))
@@ -270,9 +334,7 @@ List_t *Lexer(const char *p, Opt opt)
                         ip += 2;
                     }
                     else
-                    {
                         t->flag = LOOP_START;
-                    }
                 }
                 break;
             default:
@@ -284,9 +346,7 @@ List_t *Lexer(const char *p, Opt opt)
         if (opt >= O1 && strchr("><+-", c))
         {
             while (p[++ip] == c)
-            {
                 t->n++;
-            }
             ip--;
         }
 
@@ -294,19 +354,30 @@ List_t *Lexer(const char *p, Opt opt)
         
         // Ignore other characters as comments
         if (t->flag == COM)
-        {
             free(t);
-        }
         else
-        {
             Append(Tokens, t);
-        }
     }
 
     // Compute loop offsets
     Comp_Loops(Tokens);
 
+    // if opt level is O2, run the optimizer
+    if (opt == O2) 
+        return Optimizer(Tokens);
+
     return Tokens;
+}
+
+// Print list of tokens for debugging
+void print_tokens(List_t *tokens)
+{
+    Tok *t;
+    for (size_t i = 0; i < len(tokens); ++i)
+    {
+        t = tokens->data[i];
+        printf("Token %d | %s, n:= %d, offset:= %d\n", i, Flag_LT[t->flag], t->n, t->offset);
+    }
 }
 
 // Basic interpreter
@@ -349,15 +420,11 @@ void nerv(const char *p, Opt o)
                 break;
             case LOOP_START:
                 if (!*ptr)
-                {
                     ip = tmp->offset - 1;
-                }
                 break;
             case LOOP_END:
                 if (*ptr)
-                {
                     ip = tmp->offset - 1;
-                }
                 break;
             case IN:
                 *ptr = getchar();
@@ -461,9 +528,7 @@ void nervc(const char *p, const char *path, Opt o)
     }
 
     if (buffer_len > 0)
-    {
         fwrite(buffer, 1, buffer_len, out);
-    }
 
     fputs("}", out); // End of the main function
     fclose(out);

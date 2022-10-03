@@ -50,9 +50,7 @@ int main(int argc, char *argv[])
     Opt op = O2;
 
     if (argc >= 2)
-    {
         op = getop(argv[2]);
-    }  
 
     nerv(buffer, op);
 }

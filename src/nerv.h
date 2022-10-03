@@ -12,9 +12,11 @@ bool validate_loop(const char *);
 // Compute loop jumps and store in the IR
 void Comp_Loops(List_t *);
 // Loop unrolling/ Dead Code Removal
-void Optimizer(List_t *);
+List_t *Optimizer(List_t *);
 // Tokenizer/ Lexer
 List_t *Lexer(const char *, Opt);
+// Print list of tokens for debug
+void print_tokens(List_t*);
 // interpreter
 void nerv(const char *, Opt);
 // Brainfuck to C compiler

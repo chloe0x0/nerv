@@ -7,7 +7,7 @@
 #define R 2
 
 // Dynamic Array to store Tokens
-typedef struct 
+typedef struct List_t
 {
     size_t cap, len;
     Tok **data;
@@ -20,6 +20,6 @@ void Destroy(List_t *);
 // Append to the end of the list
 void Append(List_t *, Tok *);
 // Get len of list
-static inline size_t len(List_t *xs) { return xs->len; }
+inline size_t len(List_t *xs) { return xs->len; }
 
 #endif

@@ -9,17 +9,21 @@
 #define OUT_SIZE 100
 #define BN 5
 
-const char *benchmarks[BN] = {"./examples/benchmarks/Bench.bf", 
-                            "./examples/benchmarks/bitwidth.bf", 
-                            "./examples/benchmarks/easy-opt.bf", 
-                            "./examples/benchmarks/Skiploop.bf", 
-                            "./examples/benchmarks/too_slow.bf"};
+const char *benchmarks[BN] = {
+    "./examples/benchmarks/Bench.bf", 
+    "./examples/benchmarks/bitwidth.bf", 
+    "./examples/benchmarks/easy-opt.bf", 
+    "./examples/benchmarks/Skiploop.bf", 
+    "./examples/benchmarks/too_slow.bf"
+};
 
-const char *bench_outs[BN] = {"./examples/benchmarks/Bench.out", 
-                            "./examples/benchmarks/bitwidth.out", 
-                            "./examples/benchmarks/easy-opt.out", 
-                            "./examples/benchmarks/Skiploop.out", 
-                            "./examples/benchmarks/too_slow.out"};
+const char *bench_outs[BN] = {
+    "./examples/benchmarks/Bench.out", 
+    "./examples/benchmarks/bitwidth.out", 
+    "./examples/benchmarks/easy-opt.out", 
+    "./examples/benchmarks/Skiploop.out", 
+    "./examples/benchmarks/too_slow.out"
+};
 
 // Iterate through benchmarks and return number of correct outputs
 int test_interpreter(void)
