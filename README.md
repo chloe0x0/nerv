@@ -11,8 +11,8 @@ Nerv is an optimizing toolchain for interacting with Brainfuck programs. It incl
 
 ## testing
 ```console
-make test
-test.exe
+> make test
+> test.exe
 ```
 
 ## Optimizations
