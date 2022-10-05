@@ -1,18 +1,27 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include "nerv.h"
+
+#define TESTS 5
+
+const char *tests[TESTS] = {"--++", "--+++", "++++++--[->+<]", "+++--", "+--"};
+
+void run(const char *p)
+{
+    printf("Tokenizing: %s\n", p);
+    printf("-----------O0------------\n");
+    print_tokens(Lexer(p, O0));
+    printf("-----------O1------------\n");
+    print_tokens(Lexer(p, O1));
+    printf("-----------O2------------\n");
+    print_tokens(Lexer(p, O2));
+
+    printf("-----------Interpreting------------\n");
+    nerv(p, O2);
+    printf("-----------------------------------\n\n");
+}
 
 int main(void)
 {
-    const char *test = "+++--+[->+<]";
-
-    printf("Tokenizing: %s\n", test);
-    printf("-----------O0------------\n");
-    print_tokens(Lexer(test, O0));
-    printf("-----------O1------------\n");
-    print_tokens(Lexer(test, O1));
-    printf("-----------O2------------\n");
-    print_tokens(Lexer(test, O2));
-
-    nerv(test, O2);
+    for (size_t i = 0; i < TESTS; ++i)
+        run(tests[i]);
 }

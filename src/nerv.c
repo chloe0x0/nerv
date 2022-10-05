@@ -16,6 +16,10 @@
 // Lookup table to print enum values as strings
 const char *Flag_LT[10] = {"Sum", "Sub", "Loop_Start", "Loop_End", "SHR", "SHL", "OUT", "IN", "COM", "MEM_SET"};
 
+// Lookup table used by the Optimizer to tell if two tokens cancel one another out
+// if the tokens cannot be canceled out, it stores the same token type
+const Type CANCEL_LT[10] = {SUB, SUM, LOOP_START, LOOP_END, SHL, SHR, OUT, IN, COM, MEM_SET};
+
 /*
     Read a brainfuck file given a path and a buffer
     Returns a boolean indicating wether or not the file was succesfully read into the buffer
@@ -141,9 +145,9 @@ bool validate_loops(const char *prog)
 
     =>
       _________________________________
-      v                                |
+      v                               |
     ( [ ) | ( > ) | ( + ) | ( < ) | ( ] )
-      |______________________________^
+      |_______________________________^
 
 */
 void Comp_Loops(List_t *Tokens)
@@ -159,7 +163,7 @@ void Comp_Loops(List_t *Tokens)
         count = scan = 1;
         while (count)
         {
-            TOKEN_TYPE tmp = (Tokens->data[i + scan])->flag;
+            Type tmp = (Tokens->data[i + scan])->flag;
             count += (tmp == LOOP_START) - (tmp == LOOP_END);
             scan++;
         }
@@ -199,8 +203,7 @@ List_t *Optimizer(List_t *tokens)
 
     Tok *t, *scn, *opt_tok;
 
-    bool pass_over, c;
-    c = pass_over = false;
+    bool canceled = false;
 
     for (size_t i = 0; i < len(tokens) - 1; ++i)
     {
@@ -208,42 +211,44 @@ List_t *Optimizer(List_t *tokens)
         scn = tokens->data[i + 1];
 
         opt_tok = malloc(sizeof(Tok));
-        opt_tok->offset = t->offset;
+        memcpy(opt_tok, t, sizeof(Tok));
+
+        // lmao 
+        // cancel out operations that 'undo' eachother
+        canceled = scn->flag == CANCEL_LT[t->flag];
 
         switch (t->flag)
         {
             case SUM:
-                c = (scn->flag == SUB);
-                opt_tok->n = t->n - (c*scn->n);
-                i += c;
-                pass_over = c ? true : pass_over;
-                if (opt_tok->n == 0) {
-                    opt_tok = NULL;
-                    i++;
+                if (canceled)
+                {
+                    // the next token was a sub
+                    // subtract the token's n field
+                    opt_tok->n -= scn->n;
+                    if (opt_tok->n <= 0)
+                    {
+                        scn->n -= t->n;
+                        opt_tok = NULL;
+                    }
+                    else
+                    {
+                        scn = NULL;
+                        i++;
+                    }
                 }
-                else
-                    opt_tok->flag = opt_tok->n > 0 ? SUM : SUB;
                 break;
             case SUB:
-                c = (scn->flag == SUM);
-                opt_tok->n = t->n - (c*scn->n);
-                i += c;
-                pass_over = c ? true : pass_over;
-                if (opt_tok->n == 0) {
-                    opt_tok = NULL;
-                    i++;
-                }
-                else
-                    opt_tok->flag = opt_tok->n > 0 ? SUB : SUM;
+
+                break;
+            case SHR:
+                break;
+            case SHL:
                 break;
             default:
-                opt_tok->flag = t->flag;
-                opt_tok->n = t->n;
-                opt_tok->offset = t->offset;
                 break;
         }
 
-        if (opt_tok != NULL)
+        if (opt_tok != NULL && opt_tok->n)
             Append(opt, opt_tok);
     }
 
@@ -252,10 +257,6 @@ List_t *Optimizer(List_t *tokens)
     Comp_Loops(opt);
 
     free(tokens);
-
-    if (pass_over) {
-        return Optimizer(opt);
-    }
 
     return opt;
 }

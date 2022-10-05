@@ -26,13 +26,13 @@ Opt getop(char* arg)
         return O2;
     }
     
-    return O2;
+    return O0;
 }
 
 int main(int argc, char *argv[])
 {
     // no args provided
-    if (argc == 1)
+    if (argc < 3)
     {
         fprintf(stderr, "Not enough args provided\n");
         fprintf(stderr, USAGE);
@@ -47,10 +47,7 @@ int main(int argc, char *argv[])
     }
 
     // get optimization level
-    Opt op = O2;
-
-    if (argc >= 2)
-        op = getop(argv[2]);
+    Opt op = getop(argv[2]);
 
     nerv(buffer, op);
 }
