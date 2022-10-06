@@ -9,7 +9,7 @@
 #include "nerv.h"
 
 // Constants
-#define USE_GETC 0
+#define USE_GETC 1
 #define TAPE_LEN 90000
 #define BUFFER_SIZE 4096 // num of bytes to read before writting to a file
 #define CAP_OUT 1        // whether or not to output interpreter output to tmp.out
@@ -153,6 +153,9 @@ bool validate_loops(const char *prog)
 */
 void Comp_Loops(List_t *Tokens)
 {
+    if (len(Tokens) == 0)
+        return;
+
     for (size_t i = 0; i < len(Tokens); ++i)
     {
         Tok *token = Tokens->data[i];
@@ -164,6 +167,7 @@ void Comp_Loops(List_t *Tokens)
         count = scan = 1;
         while (count)
         {
+            assert(i + scan < len(Tokens));
             Type tmp = (Tokens->data[i + scan])->flag;
             count += (tmp == LOOP_START) - (tmp == LOOP_END);
             scan++;
@@ -216,14 +220,17 @@ List_t *Optimizer(List_t *tokens)
         memcpy(opt_tok, t, sizeof(Tok));
 
         // cancel out operations that 'undo' eachother
-        canceled = scn->flag == CANCEL_LT[t->flag];
+        canceled = scn->flag == CANCEL_LT[t->flag] && (scn->flag != t->flag);
 
         if (canceled)
         {
-            // the next token was a sub
             // subtract the token's n field
             opt_tok->n -= scn->n;        
             
+            // pointer movements are different
+            if ((opt_tok->n == 0) && (t->flag==SHL || t->flag==SHR))
+                scn->n = 0;
+
             if (opt_tok->n > 0)
                 scn->n = 0;
             else if (opt_tok->n < 0)
@@ -234,7 +241,7 @@ List_t *Optimizer(List_t *tokens)
             }
         }
 
-        if (opt_tok != NULL && opt_tok->n)
+        if (opt_tok->n)
             Append(opt, opt_tok);
         else
             free(opt_tok);
@@ -242,7 +249,7 @@ List_t *Optimizer(List_t *tokens)
 
     opt_tok = malloc(sizeof(Tok));
     memcpy(opt_tok, scn, sizeof(Tok));
-    if (opt_tok != NULL && opt_tok->n)
+    if (opt_tok->n)
         Append(opt, opt_tok);
 
     Comp_Loops(opt);

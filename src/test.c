@@ -5,7 +5,7 @@
 #include "nerv.h"
 
 #define BENCH_PATH "./examples/benchmarks/"
-#define BUFF_SIZE 90000
+#define BUFF_SIZE 10000
 #define OUT_SIZE 100
 #define BN 5
 
@@ -53,7 +53,12 @@ int test_interpreter(void)
             fprintf(stderr, "Could not read tmp.out");
             exit(EXIT_FAILURE);
         }
-        Read_BF(out_path, exp, OUT_SIZE);
+        
+        if (!Read_BF(out_path, exp, OUT_SIZE))
+        {
+            fprintf(stderr, "Could not read tmp.out");
+            exit(EXIT_FAILURE);
+        }
 
         // Check if expected output matches actual output from interpreter
         if (!strcmp(out, exp))

@@ -1,9 +1,13 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "nerv.h"
 
-#define TESTS 5
+#define TESTS 6
+#define FILES 1
 
-const char *tests[TESTS] = {"--++", "--+++", "++++++--[->+<]", "+++--", "+--"};
+const char *tests[TESTS] = {"--++", "--+++", "++++++--[->+<]", "+++--", "+--", ">><<"};
+
+const char *files[FILES] = {"examples/Hello.bf"};
 
 void run(const char *p)
 {
@@ -22,6 +26,22 @@ void run(const char *p)
 
 int main(void)
 {
+    char buffer[9000];
+
     for (size_t i = 0; i < TESTS; ++i)
         run(tests[i]);
+
+    printf("---------------------------------\n");
+    printf("Testing files\n");
+    
+    for (size_t i = 0; i < FILES; ++i)
+    {
+        if (!Read_BF(files[i], buffer, 147))
+        {
+            fprintf(stderr, "Could not open %s\n", files[i]);
+            exit(EXIT_FAILURE);
+        }
+
+        run(buffer);
+    }
 }
