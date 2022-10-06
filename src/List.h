@@ -21,5 +21,7 @@ void Destroy(List_t *);
 void Append(List_t *, Tok *);
 // Get len of list
 inline size_t len(List_t *xs) { return xs->len; }
+// Get last element of list
+inline Tok* tail(List_t *xs)  { return xs->data[len(xs) - 1]; }
 
 #endif

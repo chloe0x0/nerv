@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <assert.h>
 #include "List.h"
 #include "Token.h"
 #include "Opt.h"
@@ -202,6 +203,7 @@ List_t *Optimizer(List_t *tokens)
     List_t *opt = Cons(50);
 
     Tok *t, *scn, *opt_tok;
+    t = scn = opt_tok = NULL;
 
     bool canceled = false;
 
@@ -213,46 +215,35 @@ List_t *Optimizer(List_t *tokens)
         opt_tok = malloc(sizeof(Tok));
         memcpy(opt_tok, t, sizeof(Tok));
 
-        // lmao 
         // cancel out operations that 'undo' eachother
         canceled = scn->flag == CANCEL_LT[t->flag];
 
-        switch (t->flag)
+        if (canceled)
         {
-            case SUM:
-                if (canceled)
-                {
-                    // the next token was a sub
-                    // subtract the token's n field
-                    opt_tok->n -= scn->n;
-                    if (opt_tok->n <= 0)
-                    {
-                        scn->n -= t->n;
-                        opt_tok = NULL;
-                    }
-                    else
-                    {
-                        scn = NULL;
-                        i++;
-                    }
-                }
-                break;
-            case SUB:
-
-                break;
-            case SHR:
-                break;
-            case SHL:
-                break;
-            default:
-                break;
+            // the next token was a sub
+            // subtract the token's n field
+            opt_tok->n -= scn->n;        
+            
+            if (opt_tok->n > 0)
+                scn->n = 0;
+            else if (opt_tok->n < 0)
+            {
+                scn->n = 0;
+                opt_tok->flag = CANCEL_LT[opt_tok->flag];
+                opt_tok->n = abs(opt_tok->n);
+            }
         }
 
         if (opt_tok != NULL && opt_tok->n)
             Append(opt, opt_tok);
+        else
+            free(opt_tok);
     }
 
-    Append(opt, tokens->data[len(tokens) - 1]);
+    opt_tok = malloc(sizeof(Tok));
+    memcpy(opt_tok, scn, sizeof(Tok));
+    if (opt_tok != NULL && opt_tok->n)
+        Append(opt, opt_tok);
 
     Comp_Loops(opt);
 
