@@ -36,7 +36,7 @@ int main(void)
     
     for (size_t i = 0; i < FILES; ++i)
     {
-        if (!Read_BF(files[i], buffer, 147))
+        if (!Read_BF(files[i], buffer, 9000))
         {
             fprintf(stderr, "Could not open %s\n", files[i]);
             exit(EXIT_FAILURE);

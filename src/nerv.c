@@ -9,7 +9,7 @@
 #include "nerv.h"
 
 // Constants
-#define USE_GETC 1
+#define USE_GETC 0
 #define TAPE_LEN 90000
 #define BUFFER_SIZE 4096 // num of bytes to read before writting to a file
 #define CAP_OUT 1        // whether or not to output interpreter output to tmp.out
@@ -25,6 +25,18 @@ const Type CANCEL_LT[10] = {SUB, SUM, LOOP_START, LOOP_END, SHL, SHR, OUT, IN, C
 // Lookup table used by the Optimizer to convert token types to chars
 // used for peephole optimization
 const char OP_LT[10] = {'+', '-', '[', ']', '>', '<', '.', ',', ' ', ' '};
+
+// remove a delimiter from a string
+void trim(char* s, const char delim)
+{
+    char* s_ = s;
+    do
+    {
+        while (*s_ == delim)
+            ++s_;
+    } while ((*s++ = *s_++));
+    
+}
 
 /*
     Read a brainfuck file given a path and a buffer
@@ -91,6 +103,7 @@ bool Read_BF(const char *p, char *buff, size_t buffer_size)
 
         program[len++] = '\0';
         memcpy(buff, program, strlen(program) + 1);
+        trim(buff, ' ');
         free(program);
     }
     else
