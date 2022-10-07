@@ -53,6 +53,10 @@ gets compiled to
 
 >>><<<
 both tokens get removed, as they undo eachother
+
+
+[->+<][->>+++++++>+++<<<]
+the second loop is removed, as it can never be entered
 ```
 
 #### Optimizations to add
