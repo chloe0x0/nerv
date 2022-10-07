@@ -200,15 +200,6 @@ void Comp_Loops(List_t *Tokens)
         count = scan = 1;
         while (count)
         {
-
-            if (i+scan >= len(Tokens))
-            {
-                fprintf(stderr, "\nINVALID LOOPS!\n");
-                fprintf(stderr, "i := %u scan := %u len(Tokens) := %u\n", i, scan, len(Tokens));
-                print_tokens(Tokens, i - 5, i + 5);
-                exit(EXIT_FAILURE);
-            }
-
             assert(i + scan < len(Tokens));
             Type tmp = (Tokens->data[i + scan])->flag;
             count += (tmp == LOOP_START) - (tmp == LOOP_END);
