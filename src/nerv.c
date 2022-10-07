@@ -277,6 +277,22 @@ List_t *Optimizer(List_t *tokens)
             }
         }
 
+        switch (t->flag)
+        {
+            case LOOP_END:
+                // the loop occurs directly at the end of the current one
+                // it is therefore dead code and can be removed
+                if (scn->flag == LOOP_START)
+                {
+                    i = scn->offset;
+                    scn->n = 0;
+                }
+                break;
+
+            default:
+                break;
+        }
+
         if (opt_tok->n || (opt_tok->flag == MEM_SET))
             Append(opt, opt_tok);
         else
