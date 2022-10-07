@@ -43,6 +43,18 @@ get compiled into single instructions
 which set the memory cell value to 0
 ```
 
+### Dead code removal
+
+operations that undo eachother get reduced
+```brainfuck
+>-++
+gets compiled to 
+>+
+
+>>><<<
+both tokens get removed, as they undo eachother
+```
+
 #### Optimizations to add
 
 ### Precompute constant memory states

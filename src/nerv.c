@@ -35,7 +35,6 @@ void trim(char* s, const char delim)
         while (*s_ == delim)
             ++s_;
     } while ((*s++ = *s_++));
-    
 }
 
 /*
@@ -251,9 +250,7 @@ List_t *Optimizer(List_t *tokens)
 
         opt_tok = malloc(sizeof(Tok));
         memcpy(opt_tok, t, sizeof(Tok));
-    
         
-
         // cancel out operations that 'undo' eachother
         canceled = (scn->flag == CANCEL_LT[t->flag]) && (scn->flag != t->flag);
 
