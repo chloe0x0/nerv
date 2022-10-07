@@ -13,6 +13,7 @@
 #define TAPE_LEN 90000
 #define BUFFER_SIZE 4096 // num of bytes to read before writting to a file
 #define CAP_OUT 1        // whether or not to output interpreter output to tmp.out
+#define PASSES 2         // number of passes the optimizer will run
 
 // Lookup table to print enum values as strings
 const char *Flag_LT[10] = {"Sum", "Sub", "Loop_Start", "Loop_End", "SHR", "SHL", "OUT", "IN", "COM", "MEM_SET"};
@@ -20,6 +21,10 @@ const char *Flag_LT[10] = {"Sum", "Sub", "Loop_Start", "Loop_End", "SHR", "SHL",
 // Lookup table used by the Optimizer to tell if two tokens cancel one another out
 // if the tokens cannot be canceled out, it stores the same token type
 const Type CANCEL_LT[10] = {SUB, SUM, LOOP_START, LOOP_END, SHL, SHR, OUT, IN, COM, MEM_SET};
+
+// Lookup table used by the Optimizer to convert token types to chars
+// used for peephole optimization
+const char OP_LT[10] = {'+', '-', '[', ']', '>', '<', '.', ',', ' ', ' '};
 
 /*
     Read a brainfuck file given a path and a buffer
@@ -99,6 +104,21 @@ bool Read_BF(const char *p, char *buff, size_t buffer_size)
     return true;
 }
 
+
+// Print list of tokens for debugging
+void print_tokens(List_t *tokens, size_t start_, size_t end_)
+{
+    if ((start_ == end_) && end_ == 0)
+        end_ = len(tokens);
+
+    Tok *t;
+    for (size_t i = start_; i < end_; ++i)
+    {
+        t = tokens->data[i];
+        printf("Token %d | %s, n:= %d, offset:= %d\n", i, Flag_LT[t->flag], t->n, t->offset);
+    }
+}
+
 // Helper function to ensure that incoming expressions have well formed loops
 bool validate_loops(const char *prog)
 {
@@ -167,6 +187,15 @@ void Comp_Loops(List_t *Tokens)
         count = scan = 1;
         while (count)
         {
+
+            if (i+scan >= len(Tokens))
+            {
+                fprintf(stderr, "\nINVALID LOOPS!\n");
+                fprintf(stderr, "i := %u scan := %u len(Tokens) := %u\n", i, scan, len(Tokens));
+                print_tokens(Tokens, i - 5, i + 5);
+                exit(EXIT_FAILURE);
+            }
+
             assert(i + scan < len(Tokens));
             Type tmp = (Tokens->data[i + scan])->flag;
             count += (tmp == LOOP_START) - (tmp == LOOP_END);
@@ -218,9 +247,11 @@ List_t *Optimizer(List_t *tokens)
 
         opt_tok = malloc(sizeof(Tok));
         memcpy(opt_tok, t, sizeof(Tok));
+    
+        
 
         // cancel out operations that 'undo' eachother
-        canceled = scn->flag == CANCEL_LT[t->flag] && (scn->flag != t->flag);
+        canceled = (scn->flag == CANCEL_LT[t->flag]) && (scn->flag != t->flag);
 
         if (canceled)
         {
@@ -229,10 +260,14 @@ List_t *Optimizer(List_t *tokens)
             
             // pointer movements are different
             if ((opt_tok->n == 0) && (t->flag==SHL || t->flag==SHR))
+            {
                 scn->n = 0;
+            }
 
-            if (opt_tok->n > 0)
+            else if (opt_tok->n > 0)
+            {
                 scn->n = 0;
+            }
             else if (opt_tok->n < 0)
             {
                 scn->n = 0;
@@ -241,7 +276,7 @@ List_t *Optimizer(List_t *tokens)
             }
         }
 
-        if (opt_tok->n)
+        if (opt_tok->n || (opt_tok->flag == MEM_SET))
             Append(opt, opt_tok);
         else
             free(opt_tok);
@@ -363,21 +398,11 @@ List_t *Lexer(const char *p, Opt opt)
 
     // if opt level is O2, run the optimizer
     if (opt == O2) 
-        return Optimizer(Tokens);
+        return Optimizer(Tokens);       
 
     return Tokens;
 }
 
-// Print list of tokens for debugging
-void print_tokens(List_t *tokens)
-{
-    Tok *t;
-    for (size_t i = 0; i < len(tokens); ++i)
-    {
-        t = tokens->data[i];
-        printf("Token %d | %s, n:= %d, offset:= %d\n", i, Flag_LT[t->flag], t->n, t->offset);
-    }
-}
 
 // Basic interpreter
 void nerv(const char *p, Opt o)

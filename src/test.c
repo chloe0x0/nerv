@@ -5,7 +5,7 @@
 #include "nerv.h"
 
 #define BENCH_PATH "./examples/benchmarks/"
-#define BUFF_SIZE 10000
+#define BUFF_SIZE 90000
 #define OUT_SIZE 100
 #define BN 5
 

@@ -3,21 +3,21 @@
 #include "nerv.h"
 
 #define TESTS 6
-#define FILES 1
+#define FILES 2
 
 const char *tests[TESTS] = {"--++", "--+++", "++++++--[->+<]", "+++--", "+--", ">><<"};
 
-const char *files[FILES] = {"examples/Hello.bf"};
+const char *files[FILES] = {"examples/Hello.bf", "examples/benchmarks/Bench.bf"};
 
 void run(const char *p)
 {
     printf("Tokenizing: %s\n", p);
     printf("-----------O0------------\n");
-    print_tokens(Lexer(p, O0));
+    print_tokens(Lexer(p, O0), 0, 0);
     printf("-----------O1------------\n");
-    print_tokens(Lexer(p, O1));
+    print_tokens(Lexer(p, O1), 0, 0);
     printf("-----------O2------------\n");
-    print_tokens(Lexer(p, O2));
+    print_tokens(Lexer(p, O2), 0, 0);
 
     printf("-----------Interpreting------------\n");
     nerv(p, O2);

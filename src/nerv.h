@@ -16,7 +16,7 @@ List_t *Optimizer(List_t *);
 // Tokenizer/ Lexer
 List_t *Lexer(const char *, Opt);
 // Print list of tokens for debug
-void print_tokens(List_t*);
+void print_tokens(List_t*, size_t, size_t);
 // interpreter
 void nerv(const char *, Opt);
 // Brainfuck to C compiler
