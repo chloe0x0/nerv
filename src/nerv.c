@@ -260,7 +260,7 @@ List_t *Optimizer(List_t *tokens)
             opt_tok->n -= scn->n;        
             
             // pointer movements are different
-            if ((opt_tok->n == 0) && (t->flag==SHL || t->flag==SHR))
+            if (opt_tok->n == 0)
             {
                 scn->n = 0;
             }
