@@ -15,6 +15,7 @@ typedef enum Type
     IN,         // Read from stdin
     COM,        // Comment
     MEM_SET,    // Set the current cell value to x
+    MUL,        // Multiply cell at offset by a multiple of the cell value
 } Type;
 
 // Brainfuck Token structure

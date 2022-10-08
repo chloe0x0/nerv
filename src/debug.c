@@ -2,9 +2,10 @@
 #include <stdlib.h>
 #include "nerv.h"
 
-#define TESTS 7
+#define TESTS 12
 
-const char *tests[TESTS] = {"--++", "--+++", "++++++--[->+<]", "+++--", "+--", ">><<", "[->+<][+++++>+++++>+++>++<-]"};
+const char *tests[TESTS] = {"--++", "--+++", "++++++--[->+<]", "+++--", "+--", ">><<", "[->+<][+++++>+++++>+++>++<-]",
+        "[->+<]", "[->++<]", "[->++>+<<]", "[>+<-]", "[>++>+++>+<<<-]"};
 
 void run(const char *p)
 {
@@ -22,7 +23,15 @@ void run(const char *p)
 }
 
 int main(void)
-{
+{   
+    char buffer[200] = {0}; 
+
     for (size_t i = 0; i < TESTS; ++i)
         run(tests[i]);
+    
+    Read_BF("examples/Hello.bf", buffer, 200);
+    printf("%s\n", buffer);
+    print_tokens(Lexer(buffer, O2), 0, 0);
+
+    print_tokens(Lexer(buffer, O1), 0, 0);    
 }

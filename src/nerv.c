@@ -16,23 +16,23 @@
 #define PASSES 2         // number of passes the optimizer will run
 
 // Lookup table to print enum values as strings
-const char *Flag_LT[10] = {"Sum", "Sub", "Loop_Start", "Loop_End", "SHR", "SHL", "OUT", "IN", "COM", "MEM_SET"};
+const char *Flag_LT[11] = {"Sum", "Sub", "Loop_Start", "Loop_End", "SHR", "SHL", "OUT", "IN", "COM", "MEM_SET", "MUL"};
 
 // Lookup table used by the Optimizer to tell if two tokens cancel one another out
 // if the tokens cannot be canceled out, it stores the same token type
-const Type CANCEL_LT[10] = {SUB, SUM, LOOP_START, LOOP_END, SHL, SHR, OUT, IN, COM, MEM_SET};
+const Type CANCEL_LT[11] = {SUB, SUM, LOOP_START, LOOP_END, SHL, SHR, OUT, IN, COM, MEM_SET, MUL};
 
 // Lookup table used by the Optimizer to convert token types to chars
 // used for peephole optimization
-const char OP_LT[10] = {'+', '-', '[', ']', '>', '<', '.', ',', ' ', ' '};
+const char OP_LT[11] = {'+', '-', '[', ']', '>', '<', '.', ',', ' ', ' ', ' '};
 
-// remove a delimiter from a string
-void trim(char* s, const char delim)
+// basic pre-processing
+void pproc(char* s)
 {
     char* s_ = s;
     do
     {
-        while (*s_ == delim)
+        while (!strchr("><+-.,[]", *s_))
             ++s_;
     } while ((*s++ = *s_++));
 }
@@ -102,7 +102,7 @@ bool Read_BF(const char *p, char *buff, size_t buffer_size)
 
         program[len++] = '\0';
         memcpy(buff, program, strlen(program) + 1);
-        trim(buff, ' ');
+        pproc(buff);
         free(program);
     }
     else
@@ -209,6 +209,50 @@ void Comp_Loops(List_t *Tokens)
     }
 }
 
+// check if a loop returns to same cell after iterating
+inline bool returns_to_start(List_t *tokens, Tok *loop, size_t start)
+{
+    size_t position = start;
+
+    for (size_t ix = 0; ix < loop->offset-start; ++ix)
+    {
+        Tok* token = tokens->data[start + ix];
+        position += (token->flag==SHR)*token->n - (token->flag==SHL)*token->n;
+    }
+
+    return position == start;
+}
+
+// id multiplication loops
+bool is_mul(List_t *tokens, Tok *loop, size_t start)
+{
+    Tok *scn = tokens->data[start + 1];
+    Tok *end = tokens->data[loop->offset-1];
+    bool dec = (scn->flag==SUB && scn->n==1) || (end->flag==SUB && end->n==1);
+    bool returns = returns_to_start(tokens, loop, start);
+
+    for (size_t ix = 1; ix < loop->offset - start; ++ix)
+    {
+        Tok *scn = tokens->data[start + ix];
+        
+        switch (scn->flag)
+        {
+            case SHR:
+                break;
+            case SHL:
+                break;
+            case SUM:
+                break;
+            case SUB:
+                break;
+            default:
+                return false;
+        }
+    }
+
+    return dec && returns;
+}
+
 // More complex loop unrolling
 
 /*
@@ -238,10 +282,19 @@ List_t *Optimizer(List_t *tokens)
 {
     List_t *opt = Cons(50);
 
-    Tok *t, *scn, *opt_tok;
-    t = scn = opt_tok = NULL;
+    Tok *t, *scn, *opt_tok, *loop, *unroll;
+    t = scn = opt_tok = loop = unroll = NULL;
 
     bool canceled = false;
+
+    // used when computing distance from start of loop
+    // to end of loop during loop unrolling
+    size_t dist;
+
+    // used during loop unrolling
+    int offset = 0;
+    // multiple of cell val
+    int mult = 0;
 
     for (size_t i = 0; i < len(tokens) - 1; ++i)
     {
@@ -259,17 +312,9 @@ List_t *Optimizer(List_t *tokens)
             // subtract the token's n field
             opt_tok->n -= scn->n;        
             
-            // pointer movements are different
-            if (opt_tok->n == 0)
-            {
+            if (opt_tok->n >= 0)
                 scn->n = 0;
-            }
-
-            else if (opt_tok->n > 0)
-            {
-                scn->n = 0;
-            }
-            else if (opt_tok->n < 0)
+            else
             {
                 scn->n = 0;
                 opt_tok->flag = CANCEL_LT[opt_tok->flag];
@@ -288,7 +333,76 @@ List_t *Optimizer(List_t *tokens)
                     scn->n = 0;
                 }
                 break;
+            case LOOP_START:
+                // unroll multiplication loops
+                // ensure that there is a sub(1) operation at the begining or end of 
+                // the loop
+                // loop examples
+                /*
+                    [->+<]
+                    =>
+                    
 
+                */
+                if (!is_mul(tokens, t, i))
+                    break;
+                
+                // distance to end of loop
+                dist = t->offset - i;
+
+                for (size_t k = 1; k < dist-1; ++k)
+                {
+                    loop = tokens->data[i + k];
+
+                    switch (loop->flag)
+                    {
+                        case SHR:
+                            offset += loop->n;
+                            break;
+                        case SHL:
+                            offset -= loop->n;
+                            break;
+                        case SUB:
+                            if (k==1)
+                                break;
+
+                            mult -= loop->n;
+                            unroll = malloc(sizeof(Tok));
+                            unroll->flag = MUL;
+                            unroll->offset = offset;
+                            unroll->n = mult;
+
+                            Append(opt, unroll);
+
+                            mult = 0;
+                            break;
+                        case SUM:
+                            mult += loop->n;
+                            unroll = malloc(sizeof(Tok));
+                            unroll->flag = MUL;
+                            unroll->offset = offset;
+                            unroll->n = mult;
+
+                            Append(opt, unroll);
+
+                            mult = 0;
+                            break;
+                        default:
+                            break;
+                    }
+
+                }
+
+                if (unroll)
+                {
+                    i = t->offset;
+                    opt_tok->n = 0;
+                    scn->n = 0;
+                    offset = 0;
+                    unroll = NULL;
+                }
+                
+                break;
             default:
                 break;
         }
@@ -478,6 +592,10 @@ void nerv(const char *p, Opt o)
                 break;
             case MEM_SET:
                 *ptr = tmp->n;
+                break;
+            case MUL:
+                *(ptr+tmp->offset) += *ptr * tmp->n;
+                *ptr = 0;
                 break;
             case COM:
                 break;

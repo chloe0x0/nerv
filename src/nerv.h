@@ -9,8 +9,8 @@
 bool Read_BF(const char *, char *, size_t);
 // Compute whether or not a program has valid parens
 bool validate_loop(const char *);
-// Remove a delimiter from a string
-void trim(char *, const char);
+// pre-process
+void pproc(char *);
 // Compute loop jumps and store in the IR
 void Comp_Loops(List_t *);
 // Loop unrolling/ Dead Code Removal
