@@ -214,7 +214,7 @@ inline bool returns_to_start(List_t *tokens, Tok *loop, size_t start)
 {
     size_t position = start;
 
-    for (size_t ix = 0; ix < loop->offset-start; ++ix)
+    for (size_t ix = 1; ix < loop->offset-start; ++ix)
     {
         Tok* token = tokens->data[start + ix];
         position += (token->flag==SHR)*token->n - (token->flag==SHL)*token->n;
@@ -230,6 +230,7 @@ bool is_mul(List_t *tokens, Tok *loop, size_t start)
     Tok *end = tokens->data[loop->offset-1];
     bool dec = (scn->flag==SUB && scn->n==1) || (end->flag==SUB && end->n==1);
     bool returns = returns_to_start(tokens, loop, start);
+    bool moves = false;
 
     for (size_t ix = 1; ix < loop->offset - start; ++ix)
     {
@@ -238,8 +239,10 @@ bool is_mul(List_t *tokens, Tok *loop, size_t start)
         switch (scn->flag)
         {
             case SHR:
+                moves = true;
                 break;
             case SHL:
+                moves = true;
                 break;
             case SUM:
                 break;
@@ -250,7 +253,7 @@ bool is_mul(List_t *tokens, Tok *loop, size_t start)
         }
     }
 
-    return dec && returns;
+    return dec && returns && moves;
 }
 
 // More complex loop unrolling
@@ -334,7 +337,7 @@ List_t *Optimizer(List_t *tokens)
                 }
                 break;
             case LOOP_START:
-                // unroll multiplication loops
+                // unroll loops
                 // ensure that there is a sub(1) operation at the begining or end of 
                 // the loop
                 // loop examples
@@ -345,8 +348,24 @@ List_t *Optimizer(List_t *tokens)
 
                 */
                 if (!is_mul(tokens, t, i))
+                {
+                    // check for MEM_SET
+                    if ((scn->flag == SUB || scn->flag == SUM) && i+2==t->offset)
+                    {
+                        unroll = malloc(sizeof(Tok));
+                        unroll->flag = MEM_SET;
+                        unroll->n = 0;
+                        unroll->offset = 0;
+
+                        Append(opt, unroll);
+
+                        i += 2;
+                        scn->n = 0;
+                        opt_tok->n = 0;
+                    }
                     break;
-                
+                }
+
                 // distance to end of loop
                 dist = t->offset - i;
 
@@ -396,6 +415,7 @@ List_t *Optimizer(List_t *tokens)
                 if (unroll)
                 {
                     i = t->offset;
+                    tokens->data[t->offset]->n = 0;
                     opt_tok->n = 0;
                     scn->n = 0;
                     offset = 0;
@@ -419,6 +439,7 @@ List_t *Optimizer(List_t *tokens)
         Append(opt, opt_tok);
 
     Comp_Loops(opt);
+
 
     free(tokens);
 
@@ -486,21 +507,7 @@ List_t *Lexer(const char *p, Opt opt)
                 t->flag = LOOP_END;
                 break;
             case '[':
-                // Via a basic non-consuming scan we can identify specific loop constructs and reduce them to single instructions
-                // Reduce [-] and [+] loops to MEM_SET instructions
-                if (opt != O2)
-                    t->flag = LOOP_START;
-                else
-                {
-                    if ((p[ip + 1] == '-' || p[ip + 1] == '+') && (p[ip + 2] == ']'))
-                    {
-                        t->flag = MEM_SET;
-                        t->n = 0;
-                        ip += 2;
-                    }
-                    else
-                        t->flag = LOOP_START;
-                }
+                t->flag = LOOP_START;
                 break;
             default:
                 t->flag = COM;
