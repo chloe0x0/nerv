@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "nerv.h"
 
 #define TESTS 17
@@ -25,14 +26,13 @@ void run(const char *p)
 
 int main(void)
 {   
-    for (size_t i = 0; i < TESTS; ++i)
-        run(tests[i]);
-
     char buffer[100000];
-    Read_BF("examples/benchmarks/Bench.bf", buffer, 100000);
+    Read_BF("examples/Frac.bf", buffer, 100000);
 
-    print_tokens(Lexer(buffer, O2), 0, 0);
+    // nervc(buffer, "a0.c", O2);
 
-    nervc(buffer, "a.c", O1);
-    nervc(buffer, "a0.c", O2);
+    clock_t t = clock();
+    system("frac.exe");
+    t = clock() - t;
+    printf("\n%f\n", (double)t/CLOCKS_PER_SEC);
 }

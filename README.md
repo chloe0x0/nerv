@@ -1,4 +1,4 @@
-# nerv 🧠⚡
+# nerv 🧠
 
 Nerv is an optimizing toolchain for interacting with Brainfuck programs. It includes an Interpreter, Visualizer, and Brainfuck to C compiler.
 
@@ -18,7 +18,7 @@ Nerv is an optimizing toolchain for interacting with Brainfuck programs. It incl
 ## Optimizations
 Nerv uses various optimization techniques to speed up the execution of brainfuck programs.
 
-### Peephole Optimizations/ Run Length Encoding
+### Peephole Optimizations
 Sequences of +, -, <, > are compiled into single tokens
 ```brainfuck
 +++++++++++++
@@ -59,19 +59,6 @@ both tokens get removed, as they undo eachother
 the second loop is removed, as it can never be entered
 ```
 
-#### Optimizations to add
-
-### Precompute constant memory states
-Consider the following Hello World program
-```brainfuck
-++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.
-
-Seeing that there is no , in the program
-we can safeley pre-compute the state of the tape
-
-in general, we can safeley pre-compute the state of the tape until we find
-a user input
-```
 ### Loop Unrolling
 ```brainfuck
 loops such as 
@@ -82,14 +69,54 @@ loops such as
 
 etc
 
-can be compiled to constant time multiplications
+are compiled to constant time multiplications
+```
+
+given 
+```brainfuck
+[->++>+++<<]
+```
+
+on O2 optimizations the BF to C compiler will generate
+
+```c
+*(ptr + 1) += *ptr * 2;
+*(ptr + 2) += *ptr * 3;
+*ptr = 0;
+```
+
+without unrolling it would generate
+
+```C
+while (*ptr) {
+    *ptr -= 1;
+    ptr += 1;
+    *ptr += 2;
+    ptr += 1;
+    *ptr += 3;
+    ptr -= 2;
+}
+```
+
+#### Optimizations to add
+
+### Speculative Execution 
+Consider the following Hello World program
+```brainfuck
+++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.
+
+Seeing that there is no , in the program
+we can safeley pre-compute the state of the tape
+
+in general, we can safeley pre-compute the state of the tape until we find
+a user input
 ```
 
 ## TODO
 
-* More complex loop unrolling
-
 * Build Visualizer
+
+* Speculative Execution
 
 ## Why bother with optimizations?
 Brainfuck is a heinously innefficient language, and is rather easy to optimize.
