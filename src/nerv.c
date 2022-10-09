@@ -231,6 +231,7 @@ bool is_mul(List_t *tokens, Tok *loop, size_t start)
     bool dec = (scn->flag==SUB && scn->n==1) || (end->flag==SUB && end->n==1);
     bool returns = returns_to_start(tokens, loop, start);
     bool moves = false;
+    bool modifies = false;
 
     for (size_t ix = 1; ix < loop->offset - start; ++ix)
     {
@@ -245,15 +246,17 @@ bool is_mul(List_t *tokens, Tok *loop, size_t start)
                 moves = true;
                 break;
             case SUM:
+                modifies = true;
                 break;
             case SUB:
+                modifies = true;
                 break;
             default:
                 return false;
         }
     }
 
-    return dec && returns && moves;
+    return dec && returns && moves && modifies;
 }
 
 // More complex loop unrolling
@@ -283,7 +286,7 @@ bool is_mul(List_t *tokens, Tok *loop, size_t start)
 */
 List_t *Optimizer(List_t *tokens)
 {
-    List_t *opt = Cons(50);
+    List_t *opt = Cons(250);
 
     Tok *t, *scn, *opt_tok, *loop, *unroll;
     t = scn = opt_tok = loop = unroll = NULL;
@@ -314,7 +317,7 @@ List_t *Optimizer(List_t *tokens)
         {
             // subtract the token's n field
             opt_tok->n -= scn->n;        
-            
+
             if (opt_tok->n >= 0)
                 scn->n = 0;
             else
@@ -412,16 +415,15 @@ List_t *Optimizer(List_t *tokens)
 
                 }
 
-                if (unroll)
+                if (unroll->n)
                 {
-                    i = t->offset;
+                    i = t->offset-1;
                     tokens->data[t->offset]->n = 0;
                     opt_tok->n = 0;
                     scn->n = 0;
                     offset = 0;
-                    unroll = NULL;
                 }
-                
+            
                 break;
             default:
                 break;
@@ -439,7 +441,6 @@ List_t *Optimizer(List_t *tokens)
         Append(opt, opt_tok);
 
     Comp_Loops(opt);
-
 
     free(tokens);
 
@@ -601,7 +602,7 @@ void nerv(const char *p, Opt o)
                 *ptr = tmp->n;
                 break;
             case MUL:
-                *(ptr+tmp->offset) += *ptr * tmp->n;
+                *(ptr + tmp->offset) += *ptr * tmp->n;
                 *ptr = 0;
                 break;
             case COM:
@@ -610,7 +611,6 @@ void nerv(const char *p, Opt o)
                 fprintf(stderr, "Unkown Token: { Flag: %d; Offset: %d; N: %d; } \n", tmp->flag, tmp->offset, tmp->n);
                 exit(EXIT_FAILURE);
         }
-
         ++ip;
     }
 
@@ -687,6 +687,12 @@ void nervc(const char *p, const char *path, Opt o)
             case LOOP_START:
                 indent++;
                 buffer_len += sprintf(&buffer[buffer_len], "while (*ptr) {\n");
+                break;
+            case MUL:
+                buffer_len += sprintf(&buffer[buffer_len], "*(ptr + %d) += *ptr * %d;\n", t->offset, t->n);
+                for (size_t j = 0; j < indent - (t->flag == LOOP_END); ++j)
+                    buffer[buffer_len++] = '\t';
+                buffer_len += sprintf(&buffer[buffer_len], "*ptr = 0;\n");
                 break;
             case COM:
                 break;
