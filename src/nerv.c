@@ -422,6 +422,12 @@ List_t *Optimizer(List_t *tokens)
                     opt_tok->n = 0;
                     scn->n = 0;
                     offset = 0;
+
+                    unroll = malloc(sizeof(Tok));
+                    unroll->flag = MEM_SET;
+                    unroll->offset = unroll->n = 0;
+
+                    Append(opt, unroll);
                 }
             
                 break;
@@ -603,7 +609,6 @@ void nerv(const char *p, Opt o)
                 break;
             case MUL:
                 *(ptr + tmp->offset) += *ptr * tmp->n;
-                *ptr = 0;
                 break;
             case COM:
                 break;
@@ -690,9 +695,6 @@ void nervc(const char *p, const char *path, Opt o)
                 break;
             case MUL:
                 buffer_len += sprintf(&buffer[buffer_len], "*(ptr + %d) += *ptr * %d;\n", t->offset, t->n);
-                for (size_t j = 0; j < indent - (t->flag == LOOP_END); ++j)
-                    buffer[buffer_len++] = '\t';
-                buffer_len += sprintf(&buffer[buffer_len], "*ptr = 0;\n");
                 break;
             case COM:
                 break;
