@@ -1,12 +1,28 @@
 # nerv 🧠
 
-Nerv is an optimizing toolchain for interacting with Brainfuck programs. It includes an Interpreter, Visualizer, and Brainfuck to C compiler.
+Nerv is an optimizing Brainfuck Interpreter and Brainfuck to C Compiler. There is a bug when running SkipLoop.bf, but Ill get around 
+to it another time.
 
 ## usage
+
+Running the interpreter
+```
+nerv <Path to File> <Optimization flag: -O0, -O1, or -O2>
+
+----------------------------------------
+O0: No Optimizations
+O1: Peephole Optimizations
+O2: Dead code removal and loop unrolling
+----------------------------------------
+```
+
+### Build and run Hello World
 ```console
 > git clone https://github.com/chloe0x0/nerv.git
 > cd nerv
 > make
+> nerv examples/Hello.bf -O2
+Hello World!
 ```
 
 ## testing

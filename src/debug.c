@@ -26,6 +26,14 @@ void run(const char *p)
 
 int main(void)
 {   
-    for (size_t i = 0; i < TESTS; ++i)
-        run(tests[i]);
+    //for (size_t i = 0; i < TESTS; ++i)
+    //    run(tests[i]);
+
+    char buffer[99999];
+    Read_BF("examples/Frac.bf", buffer, 99999);
+
+    clock_t t = clock();
+    nerv(buffer, O2);
+    t = clock() - t;
+    printf("\n%f\n", (double)t / CLOCKS_PER_SEC);
 }
