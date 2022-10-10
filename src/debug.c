@@ -26,13 +26,6 @@ void run(const char *p)
 
 int main(void)
 {   
-    char buffer[100000];
-    Read_BF("examples/Frac.bf", buffer, 100000);
-
-    // nervc(buffer, "a0.c", O2);
-
-    clock_t t = clock();
-    system("frac.exe");
-    t = clock() - t;
-    printf("\n%f\n", (double)t/CLOCKS_PER_SEC);
+    for (size_t i = 0; i < TESTS; ++i)
+        run(tests[i]);
 }

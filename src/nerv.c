@@ -10,7 +10,7 @@
 
 // Constants
 #define USE_GETC 0
-#define TAPE_LEN 90000
+#define TAPE_LEN 30000
 #define BUFFER_SIZE 4096 // num of bytes to read before writting to a file
 #define CAP_OUT 1        // whether or not to output interpreter output to tmp.out
 #define PASSES 2         // number of passes the optimizer will run
@@ -27,9 +27,9 @@ const Type CANCEL_LT[11] = {SUB, SUM, LOOP_START, LOOP_END, SHL, SHR, OUT, IN, C
 const char OP_LT[11] = {'+', '-', '[', ']', '>', '<', '.', ',', ' ', ' ', ' '};
 
 // basic pre-processing
-void pproc(char* s)
+void pproc(char *s)
 {
-    char* s_ = s;
+    char *s_ = s;
     do
     {
         while (!strchr("><+-.,[]", *s_))
